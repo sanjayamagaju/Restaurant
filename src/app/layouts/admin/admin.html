@@ -1,0 +1,221 @@
+<div class="container-fluid min-vh-100 bg-body-tertiary">
+
+  <div class="row">
+
+    <!-- Sidebar -->
+    <aside class="col-lg-2 col-md-3 bg-white border-end shadow-sm p-0">
+
+      <div class="p-4 border-bottom">
+
+        <h3 class="fw-bold text-warning mb-1">
+          🍽 Bistro
+        </h3>
+
+        <small class="text-secondary">
+          Admin Panel
+        </small>
+
+      </div>
+
+      <div class="nav nav-pills flex-column gap-1 p-3">
+
+        <a class="nav-link active" href="#">
+          <i class="bi bi-speedometer2 me-2"></i>
+          Dashboard
+        </a>
+
+        <a class="nav-link text-dark" href="#">
+          <i class="bi bi-cup-hot me-2"></i>
+          Menu
+        </a>
+
+        <a class="nav-link text-dark" href="#">
+          <i class="bi bi-receipt me-2"></i>
+          Orders
+        </a>
+
+        <a class="nav-link text-dark" href="#">
+          <i class="bi bi-people me-2"></i>
+          Customers
+        </a>
+
+        <a class="nav-link text-dark" href="#">
+          <i class="bi bi-tags me-2"></i>
+          Categories
+        </a>
+
+        <a class="nav-link text-dark" href="#">
+          <i class="bi bi-gear me-2"></i>
+          Settings
+        </a>
+
+      </div>
+
+    </aside>
+
+    <!-- Content -->
+    <main class="col-lg-10 col-md-9 p-0">
+
+      <!-- Navbar -->
+      <nav class="navbar bg-white shadow-sm px-4 py-3 border-bottom">
+
+        <div>
+
+          <h4 class="fw-bold mb-0">
+            Dashboard
+          </h4>
+
+          <small class="text-secondary">
+            Welcome back 👋
+          </small>
+
+        </div>
+
+        <div class="d-flex align-items-center gap-3">
+
+          <button class="btn btn-light position-relative">
+
+            <i class="bi bi-bell"></i>
+
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            4
+                        </span>
+
+          </button>
+
+          <button class="btn btn-warning rounded-pill">
+
+            <i class="bi bi-person-circle me-2"></i>
+
+            Admin
+
+          </button>
+
+        </div>
+
+      </nav>
+
+      <!-- Page -->
+      <div class="container-fluid p-4">
+
+        <!-- Breadcrumb -->
+        <nav>
+
+          <ol class="breadcrumb">
+
+            <li class="breadcrumb-item">
+              Home
+            </li>
+
+            <li class="breadcrumb-item active">
+              Dashboard
+            </li>
+
+          </ol>
+
+        </nav>
+
+        <!-- Stats -->
+        <div class="row g-4 mb-4">
+
+          <div class="col-lg-3">
+
+            <div class="card shadow-sm border-0">
+
+              <div class="card-body">
+
+                <h6 class="text-secondary">
+                  Orders Pending
+                </h6>
+
+                <h2 class="fw-bold">
+                  125
+                </h2>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="col-lg-3">
+
+            <div class="card shadow-sm border-0">
+
+              <div class="card-body">
+
+                <h6 class="text-secondary">
+                  Orders Completed Today
+                </h6>
+
+                <h2 class="fw-bold">
+                  125
+                </h2>
+
+              </div>
+
+            </div>
+          </div>
+
+          <div class="col-lg-3">
+            <div class="card shadow-sm border-0">
+              <div class="card-body">
+                <h6 class="text-secondary">
+                  Revenue
+                </h6>
+
+                <h2 class="fw-bold">
+                  $2,450
+                </h2>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-3">
+
+            <div class="card shadow-sm border-0">
+
+              <div class="card-body">
+
+                <h6 class="text-secondary">
+                  Menu Items
+                </h6>
+
+                <h2 class="fw-bold">
+                  42
+                </h2>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Main Content -->
+        <div class="card shadow-sm border-0">
+
+          <div class="card-header bg-white">
+
+            <h5 class="mb-0">
+              Content Area
+            </h5>
+
+          </div>
+
+          <div class="card-body">
+
+            <!-- router-outlet / page content -->
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+</div>
