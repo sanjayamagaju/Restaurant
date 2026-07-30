@@ -1,100 +1,182 @@
-<div class="user-container">
-  <header class="app-header">
-    <h1>Bistro Delights</h1>
-    <div class="user-info" *ngIf="restaurantService.currentTable()">
-      <span>Table: {{ restaurantService.currentTable() }}</span>
-      <button (click)="logout()" class="btn-outline">Change Table</button>
-    </div>
+<div class="container-fluid py-4 food-theme" data-bs-theme="dark" style="max-width: 1200px;">
+  <header class="d-flex justify-content-between align-items-center pb-3 mb-4 border-bottom border-secondary-subtle">
+    <h1 class="fw-bold fs-2 app-title-gradient mb-0">Bistro Delights</h1>
+    @if (restaurantService.currentTable()) {
+      <div class="d-flex align-items-center gap-3">
+        <span>Table: {{ restaurantService.currentTable() }}</span>
+        <button (click)="logout()" class="btn btn-outline-light btn-sm">Change Table</button>
+      </div>
+    }
   </header>
 
   <!-- Table Number Modal -->
-  <div class="modal-overlay" *ngIf="!restaurantService.currentTable()">
-    <div class="modal-content glass-card">
-      <h2>Welcome to Bistro Delights!</h2>
-      <p>Please enter your Table Number:</p>
-      <input
-        type="text"
-        [(ngModel)]="tempTable"
-        placeholder="Table Number"
-        (keyup.enter)="setTableNumber()"
-        class="input-field"
-      />
-      <button (click)="setTableNumber()" [disabled]="!tempTable.trim()" class="btn-primary">
-        Start Ordering
-      </button>
+  @if (!restaurantService.currentTable()) {
+    <div
+      class="position-fixed top-0 start-0 end-0 bottom-0 bg-dark bg-opacity-75 d-flex align-items-center justify-content-center z-3"
+    >
+      <div class="card glass-card p-5 text-center mx-3" style="max-width: 400px; width: 90%;">
+        <h2 class="mb-3">Welcome to Bistro Delights!</h2>
+        <p>Please enter your Table Number:</p>
+        <input
+          type="text"
+          [(ngModel)]="tempTable"
+          placeholder="Table Number"
+          (keyup.enter)="setTableNumber()"
+          class="form-control mb-3"
+        />
+        <button (click)="setTableNumber()" [disabled]="!tempTable.trim()" class="btn btn-primary w-100">
+          Start Ordering
+        </button>
+      </div>
     </div>
-  </div>
+  }
 
-  <div class="main-content" *ngIf="restaurantService.currentTable()">
-    <div class="menu-section">
-      <!-- Today's Specials -->
-      <div class="menu-category" *ngIf="restaurantService.specialMenuItems().length > 0">
-        <h2 class="category-title">Today's Specials ✨</h2>
-        <div class="menu-grid">
-          <div
-            *ngFor="let item of restaurantService.specialMenuItems()"
-            class="menu-card special-card"
-          >
-            <div class="card-header">
-              <h3>{{ item.name }}</h3>
-              <span class="price">{{ CURRENCY }}{{ item.price.toFixed(2) }}</span>
+  @if (restaurantService.currentTable()) {
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <!-- Today's Specials -->
+        @if (restaurantService.specialMenuItems().length > 0) {
+          <div class="mb-5">
+            <h2 class="h4 border-bottom border-secondary-subtle pb-2 mb-4">Today's Specials 🔥</h2>
+            <div class="row row-cols-1 row-cols-md-2 g-4">
+              @for (item of restaurantService.specialMenuItems(); track item.id) {
+                <div class="col">
+                  <div class="card border-0 text-white menu-poster-card">
+                    @if (item.imageUrl) {
+                      <img
+                        [src]="item.imageUrl"
+                        [alt]="item.name"
+                        class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover menu-poster-img"
+                      />
+                    } @else {
+                      <div
+                        class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center fs-1 menu-placeholder menu-poster-img"
+                      >
+                        🍽️
+                      </div>
+                    }
+                    <span class="badge rounded-pill text-bg-danger position-absolute top-0 start-0 m-2 shadow-sm"
+                    >🔥 Special</span
+                    >
+                    <span class="badge rounded-pill text-bg-warning position-absolute top-0 end-0 m-2 shadow-sm fs-6"
+                    >{{ CURRENCY }}{{ item.price.toFixed(2) }}</span
+                    >
+                    <div class="card-img-overlay d-flex flex-column justify-content-end menu-overlay-gradient">
+                      <h3 class="h5 mb-1 fw-bold">{{ item.name }}</h3>
+                      <p class="small mb-3 text-white-50">{{ item.description }}</p>
+                      <button
+                        (click)="addToCart(item)"
+                        class="btn food-btn w-100 rounded-pill fw-bold py-2 px-4 shadow position-relative overflow-hidden">
+                        <i class="bi bi-bag-plus-fill me-2"></i>
+                        Add to Order
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              }
             </div>
-            <p class="description">{{ item.description }}</p>
-            <button (click)="addToCart(item)" class="btn-secondary">Add to Order</button>
           </div>
-        </div>
-      </div>
+        }
 
-      <!-- Regular Menu -->
-      <div class="menu-category">
-        <h2 class="category-title">Regular Menu</h2>
-        <div class="menu-grid">
-          <div *ngFor="let item of restaurantService.regularMenuItems()" class="menu-card">
-            <div class="card-header">
-              <h3>{{ item.name }}</h3>
-                <span class="price">{{ CURRENCY }}{{ item.price.toFixed(2) }}</span>
+        <!-- Regular Menu -->
+        <div>
+          <h2 class="h4 border-bottom border-secondary-subtle pb-2 mb-4">Regular Menu</h2>
+          <div class="row row-cols-1 row-cols-md-2 g-4">
+            @for (item of restaurantService.regularMenuItems(); track item.id) {
+              <div class="col">
+                <div class="card border-0 text-white menu-poster-card">
+                  @if (item.imageUrl) {
+                    <img
+                      [src]="item.imageUrl"
+                      [alt]="item.name"
+                      class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover menu-poster-img"
+                    />
+                  } @else {
+                    <div
+                      class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center fs-1 menu-placeholder menu-poster-img"
+                    >
+                      🍽️
+                    </div>
+                  }
+                  <span class="badge rounded-pill text-bg-warning position-absolute top-0 end-0 m-2 shadow-sm fs-6"
+                  >{{ CURRENCY }}{{ item.price.toFixed(2) }}</span
+                  >
+                  <div class="card-img-overlay d-flex flex-column justify-content-end menu-overlay-gradient">
+                    <h3 class="h5 mb-1 fw-bold">{{ item.name }}</h3>
+                    <p class="small mb-3 text-white-50">{{ item.description }}</p>
+                    <button
+                      (click)="addToCart(item)"
+                      class="btn food-btn w-100 rounded-pill fw-bold py-2 px-4 shadow position-relative overflow-hidden">
+                      <i class="bi bi-bag-plus-fill me-2"></i>
+                      Add to Order
+                    </button>
+                  </div>
+                </div>
               </div>
-            <p class="description">{{ item.description }}</p>
-            <button (click)="addToCart(item)" class="btn-secondary">Add to Order</button>
+            } @empty {
+              <div class="col">
+                <div class="alert alert-secondary text-center">No regular menu items available.</div>
+              </div>
+            }
           </div>
         </div>
-        <div *ngIf="restaurantService.regularMenuItems().length === 0" class="empty-state">
-          No regular menu items available.
-        </div>
       </div>
-    </div>
 
-    <!-- Cart Section -->
-    <aside class="cart-section glass-card">
-      <h2>Your Order</h2>
-      <div class="cart-items" *ngIf="cartItems().length > 0">
-        <div *ngFor="let cItem of cartItems()" class="cart-item">
-          <div class="item-details">
-            <span class="item-name">{{ cItem.menuItem.name }}</span>
-            <span class="item-price"
-              >{{ CURRENCY }}{{ (cItem.menuItem.price * cItem.quantity).toFixed(2) }}</span
+      <!-- Cart Section -->
+      <aside class="col-lg-4">
+        <div class="card glass-card sticky-top p-3" style="top: 20px;">
+          <h2 class="h4 mb-3">Your Order</h2>
+
+          @if (cartItems().length > 0) {
+            <ul class="list-group list-group-flush mb-3">
+              @for (cItem of cartItems(); track cItem.menuItem.id) {
+                <li
+                  class="list-group-item bg-transparent d-flex justify-content-between align-items-center px-0"
+                >
+                  <div class="d-flex flex-column">
+                    <span class="fw-semibold">{{ cItem.menuItem.name }}</span>
+                    <span class="text-muted small"
+                    >{{ CURRENCY }}{{ (cItem.menuItem.price * cItem.quantity).toFixed(2) }}</span
+                    >
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <button (click)="updateQuantity(cItem.menuItem, -1)" class="btn btn-sm btn-outline-light">
+                      -
+                    </button>
+                    <span>{{ cItem.quantity }}</span>
+                    <button (click)="updateQuantity(cItem.menuItem, 1)" class="btn btn-sm btn-outline-light">
+                      +
+                    </button>
+                  </div>
+                </li>
+              }
+            </ul>
+            <div
+              class="d-flex justify-content-between fs-5 fw-bold pt-3 border-top border-2 border-secondary-subtle"
             >
-          </div>
-          <div class="item-actions">
-            <button (click)="updateQuantity(cItem.menuItem, -1)" class="btn-icon">-</button>
-            <span>{{ cItem.quantity }}</span>
-            <button (click)="updateQuantity(cItem.menuItem, 1)" class="btn-icon">+</button>
-          </div>
-        </div>
-        <div class="cart-total">
-          <span>Total:</span>
-          <span>{{ CURRENCY }}{{ cartTotal().toFixed(2) }}</span>
-        </div>
-        <button (click)="placeOrder()" class="btn-primary w-100 mt-3">Place Order</button>
-      </div>
-      <div *ngIf="cartItems().length === 0" class="empty-cart">
-        <p>Your cart is empty. Add some delicious items!</p>
-      </div>
+              <span>Total:</span>
+              <span class="text-warning">{{ CURRENCY }}{{ cartTotal().toFixed(2) }}</span>
+            </div>
+            <button
+              (click)="placeOrder()"
+              class="btn food-btn w-100 rounded-pill fw-bold py-2 px-4 shadow position-relative overflow-hidden">
+              <i class="bi bi-bag-plus-fill me-2"></i>
+              Place Order
+            </button>
+          } @else {
+            <div class="text-muted text-center py-4">
+              <p class="mb-0">Your cart is empty. Add some delicious items!</p>
+            </div>
+          }
 
-      <!-- Order Confirmation -->
-      <div class="order-success" *ngIf="showSuccess()">
-        <p>✅ Order placed successfully! The kitchen is notified.</p>
-      </div>
-    </aside>
-  </div>
+          <!-- Order Confirmation -->
+          @if (showSuccess()) {
+            <div class="alert alert-success text-center mt-3 mb-0">
+              ✅ Order placed successfully! The kitchen is notified.
+            </div>
+          }
+        </div>
+      </aside>
+    </div>
+  }
 </div>

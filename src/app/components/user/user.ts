@@ -1,14 +1,14 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { MenuItem, OrderItem } from '../../models/types';
-import { RestaurantService } from '../../services/restaurant.service';
-import { CURRENCY as CUR } from '../../utils/constants';
+import {Component, computed, inject, signal} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {MenuItem, OrderItem} from '../../models/types';
+import {RestaurantService} from '../../services/restaurant.service';
+import {CURRENCY as CUR} from '../../utils/constants';
+
 
 @Component({
-selector: 'app-user',
-standalone: true,
-imports: [CommonModule, FormsModule],
+  selector: 'app-user',
+  standalone: true,
+  imports: [FormsModule],
   templateUrl: './user.html',
   styleUrl: './user.css',
 })
@@ -41,10 +41,10 @@ export class User {
       const existing = items.find((i) => i.menuItem.id === menuItem.id);
       if (existing) {
         return items.map((i) =>
-          i.menuItem.id === menuItem.id ? { ...i, quantity: i.quantity + 1 } : i,
+          i.menuItem.id === menuItem.id ? {...i, quantity: i.quantity + 1} : i,
         );
       }
-      return [...items, { menuItem, quantity: 1, completed: false }];
+      return [...items, {menuItem, quantity: 1, completed: false}];
     });
     this.showSuccess.set(false);
   }
@@ -54,7 +54,7 @@ export class User {
       return items
         .map((i) => {
           if (i.menuItem.id === menuItem.id) {
-            return { ...i, quantity: Math.max(0, i.quantity + delta) };
+            return {...i, quantity: Math.max(0, i.quantity + delta)};
           }
           return i;
         })
