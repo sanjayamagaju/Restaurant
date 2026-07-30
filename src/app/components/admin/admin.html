@@ -1,0 +1,159 @@
+<div class="admin-container">
+  <header class="app-header">
+    <h1>Bistro Admin Panel</h1>
+  </header>
+
+  <div class="admin-content">
+    <!-- Order Management Section -->
+    <section class="admin-section glass-card">
+      <h2>Pending Orders</h2>
+      <div class="orders-list" *ngIf="restaurantService.pendingOrders().length > 0">
+        <div *ngFor="let order of restaurantService.pendingOrders()" class="order-card pending">
+          <div class="order-header">
+            <div>
+              <span class="order-id"
+                >#{{ order.id.slice(-4) }}-{{ order.createdAt | date: 'HH:mm' }}</span
+              >
+              <h3>Table {{ order.tableNumber }}</h3>
+            </div>
+            <span class="time">{{ order.createdAt | date: 'shortTime' }}</span>
+          </div>
+          <ul class="order-items">
+            <li
+              *ngFor="let item of order.items; let i = index"
+              [class.item-completed]="item.completed"
+              (click)="restaurantService.toggleOrderItemStatus(order.id, i)"
+            >
+              <span class="item-qty">{{ item.quantity }}x</span> {{ item.menuItem.name }}
+            </li>
+          </ul>
+          <div class="order-footer">
+            <span class="total">Total: {{CURRENCY}}{{ order.totalAmount.toFixed(2) }}</span>
+            <button (click)="restaurantService.completeOrder(order.id)" class="btn-primary">
+              Mark Complete
+            </button>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="restaurantService.pendingOrders().length === 0" class="empty-state">
+        No pending orders at the moment.
+      </div>
+    </section>
+
+    <!-- Menu Management Section -->
+    <section class="admin-section glass-card">
+      <h2>Add Menu Item</h2>
+      <form (ngSubmit)="addMenuItem()" class="add-item-form">
+        <div class="form-group">
+          <label>Item Name</label>
+          <input type="text" [(ngModel)]="newItem.name" name="name" class="input-field" required />
+        </div>
+
+        <div class="form-group">
+          <label>Price ({{CURRENCY}})</label>
+          <input
+            type="number"
+            [(ngModel)]="newItem.price"
+            name="price"
+            class="input-field"
+            required
+            min="0"
+            step="0.01"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea
+            [(ngModel)]="newItem.description"
+            name="description"
+            class="input-field"
+            rows="3"
+            required
+          ></textarea>
+        </div>
+
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="isSpecial" [(ngModel)]="newItem.isSpecial" name="isSpecial" />
+          <label for="isSpecial">Mark as Today's Special</label>
+        </div>
+
+        <button
+          type="submit"
+          class="btn-secondary w-100"
+          [disabled]="!newItem.name || !newItem.price"
+        >
+          Add Item
+        </button>
+      </form>
+
+      <!-- Current Menu List -->
+      <div class="menu-list-container">
+        <h3>Current Menu</h3>
+        <div class="menu-list">
+          <div
+            *ngFor="let item of restaurantService.specialMenuItems()"
+            class="menu-item-row special"
+          >
+            <span class="item-name">✨ {{ item.name }}</span>
+            <span class="item-price">{{CURRENCY}}{{ item.price.toFixed(2) }}</span>
+          </div>
+          <div *ngFor="let item of restaurantService.regularMenuItems()" class="menu-item-row">
+            <span class="item-name">{{ item.name }}</span>
+            <span class="item-price">{{CURRENCY}}{{ item.price.toFixed(2) }}</span>
+          </div>
+          <div
+            *ngIf="restaurantService.menuItems().length === 0"
+            class="empty-state"
+            style="padding-top: 1rem; color: #aaa"
+          >
+            No menu items available.
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Completed Orders -->
+  <section class="admin-section glass-card mt-3">
+    <h2>Today's Completed Orders</h2>
+    <div class="orders-list completed-list" *ngIf="restaurantService.completedOrders().length > 0">
+      <div
+        *ngFor="let order of restaurantService.completedOrders().slice().reverse()"
+        class="order-card completed"
+      >
+        <div class="order-header">
+          <div>
+            <span class="order-id"
+              >#{{ order.id.slice(-4) }}-{{ order.createdAt | date: 'HH:mm' }}</span
+            >
+            <h4>Table {{ order.tableNumber }}</h4>
+          </div>
+          <div class="completed-actions">
+            <span class="status-badge">Completed at {{ order.createdAt | date: 'shortTime' }}</span>
+            <button (click)="toggleDetails(order.id)" class="btn-outline btn-small">
+              {{ expandedOrders.has(order.id) ? 'Hide Details' : 'View Details' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Expanded Details -->
+        <div *ngIf="expandedOrders.has(order.id)" class="order-details">
+          <ul class="order-items">
+            <li *ngFor="let item of order.items" class="item-completed static-item">
+              <span class="item-qty">{{ item.quantity }}x</span> {{ item.menuItem.name }}
+            </li>
+          </ul>
+          <div class="total-row">Total: {{CURRENCY}}{{ order.totalAmount.toFixed(2) }}</div>
+        </div>
+      </div>
+    </div>
+    <div
+      *ngIf="restaurantService.completedOrders().length === 0"
+      class="empty-state"
+      style="padding-top: 1rem; color: #aaa"
+    >
+      No completed orders today yet.
+    </div>
+  </section>
+</div>
