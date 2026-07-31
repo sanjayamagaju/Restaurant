@@ -1,0 +1,105 @@
+<div class="row g-4">
+
+  <!-- Order Management Section -->
+  <section class="col-lg-8">
+    <div class="card glass-card p-4">
+      <h2 class="h4 border-bottom border-secondary-subtle pb-2 mb-4">Pending Orders</h2>
+
+      @if (restaurantService.pendingOrders().length > 0) {
+        <div class="d-flex flex-column gap-3">
+          @for (order of restaurantService.pendingOrders(); track order.id) {
+            <div class="card border-start border-4 border-warning">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <div>
+                      <span class="badge text-bg-secondary mb-1"
+                      >#{{ order.id.slice(-4) }}-{{ order.createdAt | date: 'HH:mm' }}</span
+                      >
+                    <h3 class="h5 mb-0">Table {{ order.tableNumber }}</h3>
+                  </div>
+                  <span class="text-muted small">{{ order.createdAt | date: 'shortTime' }}</span>
+                </div>
+
+                <ul class="list-group list-group-flush mb-3">
+                  @for (item of order.items; track item.menuItem.id; let i = $index) {
+                    <li
+                      class="list-group-item bg-transparent px-0"
+                      [class.text-decoration-line-through]="item.completed"
+                      [class.opacity-50]="item.completed"
+                      role="button"
+                      (click)="restaurantService.toggleOrderItemStatus(order.id, i)"
+                    >
+                      <span class="fw-bold text-warning me-1">{{ item.quantity }}x</span>
+                      {{ item.menuItem.name }}
+                    </li>
+                  }
+                </ul>
+
+                <div
+                  class="d-flex justify-content-between align-items-center pt-3 border-top border-secondary-subtle"
+                >
+                  <span class="fw-bold fs-6">Total: {{ CURRENCY }}{{ order.totalAmount }}</span>
+                  <button (click)="restaurantService.completeOrder(order.id)" class="btn btn-primary">
+                    Mark Complete
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="alert alert-secondary text-center mb-0">No pending orders at the moment.</div>
+      }
+    </div>
+  </section>
+
+  <!-- Completed Orders -->
+  <section class="col-lg-4">
+    <div class="card glass-card p-4 h-100">
+      <h2 class="h4 border-bottom border-secondary-subtle pb-2 mb-4">Today's Completed Orders</h2>
+
+      @if (restaurantService.completedOrders().length > 0) {
+        <div class="d-flex flex-column gap-3">
+          @for (order of restaurantService.completedOrders().slice().reverse(); track order.id) {
+            <div class="card border-start border-4 border-success">
+              <div class="card-body py-3">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <span class="badge text-bg-secondary mb-1"
+                    >#{{ order.id.slice(-4) }}-{{ order.createdAt | date: 'HH:mm' }}</span
+                    >
+                    <h4 class="h6 mb-0">Table {{ order.tableNumber }}</h4>
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge text-bg-success bg-opacity-25 text-success"
+                    >Completed at {{ order.createdAt | date: 'shortTime' }}</span
+                    >
+                    <button (click)="toggleDetails(order.id)" class="btn btn-outline-light btn-sm">
+                      {{ expandedOrders.has(order.id) ? 'Hide Details' : 'View Details' }}
+                    </button>
+                  </div>
+                </div>
+
+                @if (expandedOrders.has(order.id)) {
+                  <div class="mt-3 pt-3 border-top border-secondary-subtle">
+                    <ul class="list-group list-group-flush mb-2">
+                      @for (item of order.items; track item.menuItem.id) {
+                        <li class="list-group-item bg-transparent px-0 text-decoration-line-through opacity-50">
+                          <span class="fw-bold me-1">{{ item.quantity }}x</span>
+                          {{ item.menuItem.name }}
+                        </li>
+                      }
+                    </ul>
+                    <div class="text-end fw-bold">Total: {{ CURRENCY }}{{ order.totalAmount }}</div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="alert alert-secondary text-center mb-0">No completed orders today yet.</div>
+      }
+    </div>
+  </section>
+</div>

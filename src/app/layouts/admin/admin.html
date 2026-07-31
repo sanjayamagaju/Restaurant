@@ -18,37 +18,15 @@
       </div>
 
       <div class="nav nav-pills flex-column gap-1 p-3">
-
-        <a class="nav-link active" href="#">
-          <i class="bi bi-speedometer2 me-2"></i>
-          Dashboard
-        </a>
-
-        <a class="nav-link text-dark" href="#">
-          <i class="bi bi-cup-hot me-2"></i>
-          Menu
-        </a>
-
-        <a class="nav-link text-dark" href="#">
-          <i class="bi bi-receipt me-2"></i>
-          Orders
-        </a>
-
-        <a class="nav-link text-dark" href="#">
-          <i class="bi bi-people me-2"></i>
-          Customers
-        </a>
-
-        <a class="nav-link text-dark" href="#">
-          <i class="bi bi-tags me-2"></i>
-          Categories
-        </a>
-
-        <a class="nav-link text-dark" href="#">
-          <i class="bi bi-gear me-2"></i>
-          Settings
-        </a>
-
+        @for (item of navItems; track trackByKey($index)) {
+          <a class="nav-link active"
+             [routerLink]="item.route"
+             routerLinkActive="active"
+             [routerLinkActiveOptions]="{ exact: true }">
+            <i [ngClass]="item.icon"></i>
+            {{ item.name }}
+          </a>
+        }
       </div>
 
     </aside>
@@ -97,23 +75,6 @@
 
       <!-- Page -->
       <div class="container-fluid p-4">
-
-        <!-- Breadcrumb -->
-        <nav>
-
-          <ol class="breadcrumb">
-
-            <li class="breadcrumb-item">
-              Home
-            </li>
-
-            <li class="breadcrumb-item active">
-              Dashboard
-            </li>
-
-          </ol>
-
-        </nav>
 
         <!-- Stats -->
         <div class="row g-4 mb-4">
@@ -206,7 +167,7 @@
 
           <div class="card-body">
 
-            <!-- router-outlet / page content -->
+            <router-outlet></router-outlet>
 
           </div>
 

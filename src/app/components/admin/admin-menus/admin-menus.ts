@@ -1,19 +1,20 @@
-import { Component, inject } from '@angular/core';
-import { RestaurantService } from '../../services/restaurant.service';
-import { DatePipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { CURRENCY as CUR } from '../../utils/constants';
+import {Component, inject} from '@angular/core';
+import {CURRENCY} from '../../../utils/constants';
+import {DatePipe} from '@angular/common';
+import {RestaurantService} from '../../../services/restaurant.service';
+import {FormsModule} from '@angular/forms';
+
 
 @Component({
-  selector: 'app-admin',
-  standalone: true,
-  imports: [DatePipe, FormsModule],
-  templateUrl: './admin.html',
-  styleUrl: './admin.css',
+  selector: 'app-admin-menus',
+  imports: [
+    FormsModule
+  ],
+  templateUrl: './admin-menus.html',
+  styleUrl: './admin-menus.css',
 })
-export class Admin {
+export class AdminMenus {
   restaurantService = inject(RestaurantService);
-  readonly CURRENCY = CUR;
 
   newItem = {
     name: '',
@@ -23,7 +24,6 @@ export class Admin {
     imageUrl: '',
   };
 
-  expandedOrders = new Set<string>();
 
   onImageSelected(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -51,11 +51,8 @@ export class Admin {
     }
   }
 
-  toggleDetails(orderId: string) {
-    if (this.expandedOrders.has(orderId)) {
-      this.expandedOrders.delete(orderId);
-    } else {
-      this.expandedOrders.add(orderId);
-    }
-  }
+
+
+
+  protected readonly CURRENCY = CURRENCY;
 }

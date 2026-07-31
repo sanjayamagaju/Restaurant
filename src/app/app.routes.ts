@@ -1,30 +1,32 @@
 import { Routes } from '@angular/router';
-import { User } from './components/user/user';
 import {Admin} from './layouts/admin/admin';
-import {AdminOrders} from './components/admin-orders/admin-orders';
-import {AdminDashboard} from './components/admin-dashboard/admin-dashboard';
+import {Customer} from './layouts/customer/customer';
+import {AdminOrders} from './components/admin/admin-orders/admin-orders';
+import {AdminMenus} from './components/admin/admin-menus/admin-menus';
 
 export const routes: Routes = [
   {
-    path: '', component: User
+    path: '',
+    component: Customer,
+    children: []
   },
   {
     path: 'admin',
     component: Admin,
     children: [
       {
-        path: 'orders-placed',
+        path: '',
+        redirectTo: 'orders',
+        pathMatch: 'full',
+      },
+      {
+        path: 'orders',
         component: AdminOrders,
         canActivate: [],
       },
       {
-        path: 'orders-completed',
-        component: AdminOrders,
-        canActivate: [],
-      },
-      {
-        path: 'menu',
-        component: AdminDashboard,
+        path: 'menus',
+        component: AdminMenus,
         canActivate: [],
       },
     ]
