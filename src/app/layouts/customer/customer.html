@@ -1,10 +1,22 @@
-<div class="container-fluid py-4 food-theme" data-bs-theme="dark" style="max-width: 1200px;">
-  <header class="d-flex justify-content-between align-items-center pb-3 mb-4 border-bottom border-secondary-subtle">
-    <h1 class="fw-bold fs-2 app-title-gradient mb-0">Bistro Delights</h1>
+<div class="food-theme" data-bs-theme="dark">
+  <div class="container-fluid py-4" style="max-width: 1200px;">
+  <header class="d-flex justify-content-between align-items-center flex-wrap gap-3 pb-3 mb-4 border-bottom border-secondary-subtle">
+    <div class="d-flex align-items-center gap-3">
+      <span class="brand-mark">
+        <i class="bi bi-egg-fried"></i>
+      </span>
+      <div>
+        <h1 class="fw-bold fs-2 app-title-gradient mb-0 font-display">Bistro Delights</h1>
+        <p class="mb-0 small brand-tagline">Fresh ingredients &middot; Handmade &middot; Served hot</p>
+      </div>
+    </div>
     @if (restaurantService.currentTable()) {
       <div class="d-flex align-items-center gap-3">
-        <span>Table: {{ restaurantService.currentTable() }}</span>
-        <button (click)="logout()" class="btn btn-outline-light btn-sm">Change Table</button>
+        <span class="table-chip">
+          <i class="bi bi-geo-alt-fill me-1"></i>
+          Table {{ restaurantService.currentTable() }}
+        </span>
+        <button (click)="logout()" class="btn btn-outline-light btn-sm rounded-pill">Change Table</button>
       </div>
     }
   </header>
@@ -14,17 +26,23 @@
     <div
       class="position-fixed top-0 start-0 end-0 bottom-0 bg-dark bg-opacity-75 d-flex align-items-center justify-content-center z-3"
     >
-      <div class="card glass-card p-5 text-center mx-3" style="max-width: 400px; width: 90%;">
-        <h2 class="mb-3">Welcome to Bistro Delights!</h2>
-        <p>Please enter your Table Number:</p>
+      <div class="card glass-card p-5 text-center mx-3 welcome-card" style="max-width: 420px; width: 90%;">
+        <span class="brand-mark brand-mark-lg mx-auto mb-3">
+          <i class="bi bi-egg-fried"></i>
+        </span>
+        <h2 class="mb-2 font-display">Welcome to Bistro Delights!</h2>
+        <p class="text-secondary-emphasis mb-4">Handcrafted dishes, fired fresh for your table.</p>
+        <label class="small text-start w-100 mb-1 text-secondary-emphasis" for="tableNumberInput">Table Number</label>
         <input
+          id="tableNumberInput"
           type="text"
           [(ngModel)]="tempTable"
-          placeholder="Table Number"
+          placeholder="e.g. 5"
           (keyup.enter)="setTableNumber()"
-          class="form-control mb-3"
+          class="form-control form-control-lg mb-3 text-center"
         />
-        <button (click)="setTableNumber()" [disabled]="!tempTable.trim()" class="btn btn-primary w-100">
+        <button (click)="setTableNumber()" [disabled]="!tempTable.trim()" class="btn food-btn w-100 rounded-pill fw-bold py-2">
+          <i class="bi bi-egg-fried me-2"></i>
           Start Ordering
         </button>
       </div>
@@ -37,11 +55,14 @@
         <!-- Today's Specials -->
         @if (restaurantService.specialMenuItems().length > 0) {
           <div class="mb-5">
-            <h2 class="h4 border-bottom border-secondary-subtle pb-2 mb-4">Today's Specials 🔥</h2>
+            <h2 class="h4 section-title pb-2 mb-4 font-display">
+              <i class="bi bi-fire text-danger-emphasis me-2"></i>
+              Today's Specials
+            </h2>
             <div class="row row-cols-1 row-cols-md-2 g-4">
-              @for (item of restaurantService.specialMenuItems(); track item.id) {
-                <div class="col">
-                  <div class="card border-0 text-white menu-poster-card">
+              @for (item of restaurantService.specialMenuItems(); track item.id; let i = $index) {
+                <div class="col menu-card-enter" [style.animation-delay.ms]="i * 70">
+                  <div class="card border-0 text-white menu-poster-card menu-poster-card--special">
                     @if (item.imageUrl) {
                       <img
                         [src]="item.imageUrl"
@@ -50,19 +71,20 @@
                       />
                     } @else {
                       <div
-                        class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center fs-1 menu-placeholder menu-poster-img"
+                        class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center menu-placeholder menu-poster-img"
                       >
-                        🍽️
+                        <i class="bi bi-egg-fried"></i>
                       </div>
                     }
-                    <span class="badge rounded-pill text-bg-danger position-absolute top-0 start-0 m-2 shadow-sm"
-                    >🔥 Special</span
-                    >
-                    <span class="badge rounded-pill text-bg-warning position-absolute top-0 end-0 m-2 shadow-sm fs-6"
+                    <span class="special-ribbon">
+                      <i class="bi bi-fire me-1"></i>
+                      Special
+                    </span>
+                    <span class="price-tag position-absolute top-0 end-0 m-2 shadow-sm"
                     >{{ CURRENCY }}{{ item.price.toFixed(2) }}</span
                     >
                     <div class="card-img-overlay d-flex flex-column justify-content-end menu-overlay-gradient">
-                      <h3 class="h5 mb-1 fw-bold">{{ item.name }}</h3>
+                      <h3 class="h5 mb-1 fw-bold font-display">{{ item.name }}</h3>
                       <p class="small mb-3 text-white-50">{{ item.description }}</p>
                       <button
                         (click)="addToCart(item)"
@@ -80,10 +102,13 @@
 
         <!-- Regular Menu -->
         <div>
-          <h2 class="h4 border-bottom border-secondary-subtle pb-2 mb-4">Regular Menu</h2>
+          <h2 class="h4 section-title pb-2 mb-4 font-display">
+            <i class="bi bi-journal-bookmark-fill me-2"></i>
+            Regular Menu
+          </h2>
           <div class="row row-cols-1 row-cols-md-2 g-4">
-            @for (item of restaurantService.regularMenuItems(); track item.id) {
-              <div class="col">
+            @for (item of restaurantService.regularMenuItems(); track item.id; let i = $index) {
+              <div class="col menu-card-enter" [style.animation-delay.ms]="i * 70">
                 <div class="card border-0 text-white menu-poster-card">
                   @if (item.imageUrl) {
                     <img
@@ -93,16 +118,16 @@
                     />
                   } @else {
                     <div
-                      class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center fs-1 menu-placeholder menu-poster-img"
+                      class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center menu-placeholder menu-poster-img"
                     >
-                      🍽️
+                      <i class="bi bi-egg-fried"></i>
                     </div>
                   }
-                  <span class="badge rounded-pill text-bg-warning position-absolute top-0 end-0 m-2 shadow-sm fs-6"
+                  <span class="price-tag position-absolute top-0 end-0 m-2 shadow-sm"
                   >{{ CURRENCY }}{{ item.price.toFixed(2) }}</span
                   >
                   <div class="card-img-overlay d-flex flex-column justify-content-end menu-overlay-gradient">
-                    <h3 class="h5 mb-1 fw-bold">{{ item.name }}</h3>
+                    <h3 class="h5 mb-1 fw-bold font-display">{{ item.name }}</h3>
                     <p class="small mb-3 text-white-50">{{ item.description }}</p>
                     <button
                       (click)="addToCart(item)"
@@ -115,7 +140,10 @@
               </div>
             } @empty {
               <div class="col">
-                <div class="alert alert-secondary text-center">No regular menu items available.</div>
+                <div class="empty-state text-center py-5">
+                  <i class="bi bi-egg-fried d-block mb-2"></i>
+                  <p class="mb-0">No regular menu items available yet &mdash; check back soon!</p>
+                </div>
               </div>
             }
           </div>
@@ -124,8 +152,16 @@
 
       <!-- Cart Section -->
       <aside class="col-lg-4">
-        <div class="card glass-card sticky-top p-3" style="top: 20px;">
-          <h2 class="h4 mb-3">Your Order</h2>
+        <div class="card glass-card cart-card sticky-top p-3" style="top: 20px;">
+          <h2 class="h4 mb-3 font-display d-flex align-items-center gap-2">
+            <span class="cart-icon-wrap" [class.bump]="bumpCart()">
+              <i class="bi bi-bag-heart-fill"></i>
+              @if (cartCount() > 0) {
+                <span class="cart-count-badge">{{ cartCount() }}</span>
+              }
+            </span>
+            Your Order
+          </h2>
 
           @if (cartItems().length > 0) {
             <ul class="list-group list-group-flush mb-3">
@@ -135,17 +171,25 @@
                 >
                   <div class="d-flex flex-column">
                     <span class="fw-semibold">{{ cItem.menuItem.name }}</span>
-                    <span class="text-muted small"
+                    <span class="text-secondary-emphasis small tabular-nums"
                     >{{ CURRENCY }}{{ (cItem.menuItem.price * cItem.quantity).toFixed(2) }}</span
                     >
                   </div>
-                  <div class="d-flex align-items-center gap-2">
-                    <button (click)="updateQuantity(cItem.menuItem, -1)" class="btn btn-sm btn-outline-light">
-                      -
+                  <div class="d-flex align-items-center gap-2 qty-stepper">
+                    <button
+                      (click)="updateQuantity(cItem.menuItem, -1)"
+                      [attr.aria-label]="cItem.quantity === 1 ? 'Remove ' + cItem.menuItem.name : 'Decrease quantity'"
+                      class="btn btn-sm qty-btn"
+                    >
+                      <i class="bi" [ngClass]="cItem.quantity === 1 ? 'bi-trash3-fill' : 'bi-dash-lg'"></i>
                     </button>
-                    <span>{{ cItem.quantity }}</span>
-                    <button (click)="updateQuantity(cItem.menuItem, 1)" class="btn btn-sm btn-outline-light">
-                      +
+                    <span class="tabular-nums fw-semibold" style="min-width: 1.5em; text-align: center;">{{ cItem.quantity }}</span>
+                    <button
+                      (click)="updateQuantity(cItem.menuItem, 1)"
+                      aria-label="Increase quantity"
+                      class="btn btn-sm qty-btn"
+                    >
+                      <i class="bi bi-plus-lg"></i>
                     </button>
                   </div>
                 </li>
@@ -155,28 +199,31 @@
               class="d-flex justify-content-between fs-5 fw-bold pt-3 border-top border-2 border-secondary-subtle"
             >
               <span>Total:</span>
-              <span class="text-warning">{{ CURRENCY }}{{ cartTotal().toFixed(2) }}</span>
+              <span class="text-warning tabular-nums">{{ CURRENCY }}{{ cartTotal().toFixed(2) }}</span>
             </div>
             <button
               (click)="placeOrder()"
-              class="btn food-btn w-100 rounded-pill fw-bold py-2 px-4 shadow position-relative overflow-hidden">
-              <i class="bi bi-bag-plus-fill me-2"></i>
+              class="btn food-btn w-100 rounded-pill fw-bold py-2 px-4 mt-3 shadow position-relative overflow-hidden">
+              <i class="bi bi-check2-circle me-2"></i>
               Place Order
             </button>
           } @else {
-            <div class="text-muted text-center py-4">
+            <div class="empty-state text-center py-4">
+              <i class="bi bi-bag-heart d-block mb-2"></i>
               <p class="mb-0">Your cart is empty. Add some delicious items!</p>
             </div>
           }
 
           <!-- Order Confirmation -->
           @if (showSuccess()) {
-            <div class="alert alert-success text-center mt-3 mb-0">
-              ✅ Order placed successfully! The kitchen is notified.
+            <div class="alert order-success text-center mt-3 mb-0 d-flex align-items-center justify-content-center gap-2">
+              <i class="bi bi-check-circle-fill fs-5"></i>
+              <span>Order placed successfully! The kitchen is notified.</span>
             </div>
           }
         </div>
       </aside>
     </div>
   }
+  </div>
 </div>

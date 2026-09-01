@@ -3,6 +3,8 @@ import {Admin} from './layouts/admin/admin';
 import {Customer} from './layouts/customer/customer';
 import {AdminOrders} from './components/admin/admin-orders/admin-orders';
 import {AdminMenus} from './components/admin/admin-menus/admin-menus';
+import {AdminLogin} from './components/admin-login/admin-login';
+import {authGuard} from './services/auth.guard';
 
 export const routes: Routes = [
   {
@@ -11,8 +13,13 @@ export const routes: Routes = [
     children: []
   },
   {
+    path: 'admin-login',
+    component: AdminLogin,
+  },
+  {
     path: 'admin',
     component: Admin,
+    canActivate: [authGuard],
     children: [
       {
         path: '',

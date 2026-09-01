@@ -1,4 +1,5 @@
 import {Component, computed, inject, signal} from '@angular/core';
+import {NgClass} from '@angular/common';
 import {FormsModule} from '@angular/forms';
 import {MenuItem, OrderItem} from '../../models/types';
 import {RestaurantService} from '../../services/restaurant.service';
@@ -8,7 +9,7 @@ import {CURRENCY as CUR} from '../../utils/constants';
 @Component({
   selector: 'app-user',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, NgClass],
   templateUrl: './customer.html',
   styleUrl: './customer.css',
 })
@@ -19,9 +20,15 @@ export class Customer {
   tempTable = '';
   cartItems = signal<OrderItem[]>([]);
   showSuccess = signal(false);
+  bumpCart = signal(false);
+  private bumpTimeout?: ReturnType<typeof setTimeout>;
 
   cartTotal = computed(() => {
     return this.cartItems().reduce((total, item) => total + item.menuItem.price * item.quantity, 0);
+  });
+
+  cartCount = computed(() => {
+    return this.cartItems().reduce((count, item) => count + item.quantity, 0);
   });
 
   setTableNumber() {
@@ -47,6 +54,17 @@ export class Customer {
       return [...items, {menuItem, quantity: 1, completed: false}];
     });
     this.showSuccess.set(false);
+    this.triggerCartBump();
+  }
+
+  private triggerCartBump() {
+    this.bumpCart.set(false);
+    clearTimeout(this.bumpTimeout);
+    // Re-trigger the CSS animation on the next frame even if it's already mid-play.
+    requestAnimationFrame(() => {
+      this.bumpCart.set(true);
+      this.bumpTimeout = setTimeout(() => this.bumpCart.set(false), 400);
+    });
   }
 
   updateQuantity(menuItem: MenuItem, delta: number) {

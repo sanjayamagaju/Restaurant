@@ -1,119 +1,143 @@
-<div class="container-fluid py-4 food-theme" data-bs-theme="dark" style="max-width: 1200px;">
+<div class="row g-4">
 
-  <div class="row g-4">
+  <!-- Menu Management Section -->
+  <section class="col-lg-4">
+    <div class="card glass-card p-4">
+      <h2 class="h5 section-title pb-2 mb-4 font-display">
+        <i class="bi bi-plus-circle-fill me-2"></i>
+        Add Menu Item
+      </h2>
 
-    <!-- Menu Management Section -->
-    <section class="col-lg-4">
-      <div class="card glass-card p-4">
-        <h2 class="h4 border-bottom border-secondary-subtle pb-2 mb-4">Add Menu Item</h2>
+      <form (ngSubmit)="addMenuItem()" class="d-flex flex-column gap-3">
+        <div>
+          <label class="form-label text-secondary-emphasis small">Item Name</label>
+          <input type="text" [(ngModel)]="newItem.name" name="name" class="form-control" required/>
+        </div>
 
-        <form (ngSubmit)="addMenuItem()" class="d-flex flex-column gap-3">
-          <div>
-            <label class="form-label text-muted small">Item Name</label>
-            <input type="text" [(ngModel)]="newItem.name" name="name" class="form-control" required/>
-          </div>
+        <div>
+          <label class="form-label text-secondary-emphasis small">Price ({{ CURRENCY }})</label>
+          <input
+            type="number"
+            [(ngModel)]="newItem.price"
+            name="price"
+            class="form-control"
+            required
+            min="0"
+            step="0.01"
+          />
+        </div>
 
-          <div>
-            <label class="form-label text-muted small">Price ({{ CURRENCY }})</label>
-            <input
-              type="number"
-              [(ngModel)]="newItem.price"
-              name="price"
-              class="form-control"
-              required
-              min="0"
-              step="0.01"
+        <div>
+          <label class="form-label text-secondary-emphasis small">Description</label>
+          <textarea
+            [(ngModel)]="newItem.description"
+            name="description"
+            class="form-control"
+            rows="3"
+            required
+          ></textarea>
+        </div>
+
+        <div>
+          <label class="form-label text-secondary-emphasis small">Item Image</label>
+          <input type="file" accept="image/*" (change)="onImageSelected($event)" class="form-control"/>
+          @if (newItem.imageUrl) {
+            <img
+              [src]="newItem.imageUrl"
+              alt="Preview"
+              class="mt-2 rounded"
+              style="height: 90px; width: 90px; object-fit: cover;"
             />
-          </div>
+          }
+        </div>
 
-          <div>
-            <label class="form-label text-muted small">Description</label>
-            <textarea
-              [(ngModel)]="newItem.description"
-              name="description"
-              class="form-control"
-              rows="3"
-              required
-            ></textarea>
-          </div>
+        <div class="form-check d-flex align-items-center gap-2 form-switch">
+          <input
+            type="checkbox"
+            id="isSpecial"
+            [(ngModel)]="newItem.isSpecial"
+            name="isSpecial"
+            class="form-check-input mt-0"
+            role="switch"
+          />
+          <label class="form-check-label" for="isSpecial">
+            <i class="bi bi-fire text-danger-emphasis me-1"></i>
+            Mark as Today's Special
+          </label>
+        </div>
 
-          <div>
-            <label class="form-label text-muted small">Item Image</label>
-            <input type="file" accept="image/*" (change)="onImageSelected($event)" class="form-control"/>
-            @if (newItem.imageUrl) {
-              <img
-                [src]="newItem.imageUrl"
-                alt="Preview"
-                class="mt-2 rounded"
-                style="height: 90px; width: 90px; object-fit: cover;"
-              />
+        <button type="submit" class="btn food-btn w-100 rounded-pill fw-bold py-2" [disabled]="!newItem.name || !newItem.price">
+          <i class="bi bi-plus-lg me-2"></i>
+          Add Item
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Available Menu List -->
+  <section class="col-lg-8">
+    <div class="card glass-card p-4 h-100">
+      <h2 class="h5 section-title pb-2 mb-4 font-display">
+        <i class="bi bi-journal-richtext me-2"></i>
+        Available Menu Items
+      </h2>
+
+      <ul class="list-group list-group-flush">
+        @for (item of restaurantService.specialMenuItems(); track item.id) {
+          <li class="list-group-item bg-transparent d-flex align-items-center gap-3 px-0 py-3">
+            @if (item.imageUrl) {
+              <img [src]="item.imageUrl" alt="" class="rounded-3 flex-shrink-0"
+                   style="width: 48px; height: 48px; object-fit: cover;"/>
+            } @else {
+              <div
+                class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 fs-5"
+                style="width: 48px; height: 48px; background: var(--bs-tertiary-bg); color: var(--bs-secondary-color);"
+              >
+                <i class="bi bi-egg-fried"></i>
+              </div>
             }
-          </div>
-
-          <div class="form-check d-flex align-items-center gap-2">
-            <input
-              type="checkbox"
-              id="isSpecial"
-              [(ngModel)]="newItem.isSpecial"
-              name="isSpecial"
-              class="form-check-input mt-0"
-            />
-            <label class="form-check-label" for="isSpecial">Mark as Today's Special</label>
-          </div>
-
-          <button type="submit" class="btn btn-primary w-100" [disabled]="!newItem.name || !newItem.price">
-            Add Item
-          </button>
-        </form>
-      </div>
-    </section>
-
-    <!-- Available Menu List -->
-    <section class="col-lg-8">
-      <div class="card glass-card p-4 h-100">
-        <h4 class="mb-3 fw-semibold app-title-gradient text-decoration-underline text-center">Available Menu Items</h4>
-        <ul class="list-group list-group-flush">
-          @for (item of restaurantService.specialMenuItems(); track item.id) {
-            <li class="list-group-item bg-transparent d-flex align-items-center gap-2 px-0">
-              @if (item.imageUrl) {
-                <img [src]="item.imageUrl" alt="" class="rounded"
-                     style="width: 40px; height: 40px; object-fit: cover;"/>
-              } @else {
-                <div
-                  class="rounded d-flex align-items-center justify-content-center"
-                  style="width: 40px; height: 40px; background: var(--bs-tertiary-bg);"
-                >
-                  🍽️
-                </div>
-              }
-              <span class="text-warning fw-semibold flex-grow-1">✨ {{ item.name }}</span>
-              <span>{{ CURRENCY }}{{ item.price }}</span>
-            </li>
-          }
-          @for (item of restaurantService.regularMenuItems(); track item.id) {
-            <li class="list-group-item bg-transparent d-flex align-items-center gap-2 px-0">
-              @if (item.imageUrl) {
-                <img [src]="item.imageUrl" alt="" class="rounded"
-                     style="width: 40px; height: 40px; object-fit: cover;"/>
-              } @else {
-                <div
-                  class="rounded d-flex align-items-center justify-content-center"
-                  style="width: 40px; height: 40px; background: var(--bs-tertiary-bg);"
-                >
-                  🍽️
-                </div>
-              }
-              <span class="flex-grow-1">{{ item.name }}</span>
-              <span>{{ CURRENCY }}{{ item.price }}</span>
-            </li>
-          }
-          @if (restaurantService.menuItems().length === 0) {
-            <li class="list-group-item bg-transparent text-muted px-0">No menu items available.</li>
-          }
-        </ul>
-      </div>
-    </section>
-
-  </div>
+            <div class="flex-grow-1">
+              <div class="d-flex align-items-center gap-2">
+                <span class="fw-semibold">{{ item.name }}</span>
+                <span class="badge rounded-pill text-bg-danger">
+                  <i class="bi bi-fire me-1"></i>Special
+                </span>
+              </div>
+              <p class="text-secondary-emphasis small mb-0">{{ item.description }}</p>
+            </div>
+            <span class="price-tag tabular-nums">{{ CURRENCY }}{{ item.price }}</span>
+          </li>
+        }
+        @for (item of restaurantService.regularMenuItems(); track item.id) {
+          <li class="list-group-item bg-transparent d-flex align-items-center gap-3 px-0 py-3">
+            @if (item.imageUrl) {
+              <img [src]="item.imageUrl" alt="" class="rounded-3 flex-shrink-0"
+                   style="width: 48px; height: 48px; object-fit: cover;"/>
+            } @else {
+              <div
+                class="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 fs-5"
+                style="width: 48px; height: 48px; background: var(--bs-tertiary-bg); color: var(--bs-secondary-color);"
+              >
+                <i class="bi bi-egg-fried"></i>
+              </div>
+            }
+            <div class="flex-grow-1">
+              <span class="fw-semibold d-block">{{ item.name }}</span>
+              <p class="text-secondary-emphasis small mb-0">{{ item.description }}</p>
+            </div>
+            <span class="price-tag tabular-nums">{{ CURRENCY }}{{ item.price }}</span>
+          </li>
+        }
+        @if (restaurantService.menuItems().length === 0) {
+          <li class="list-group-item bg-transparent px-0">
+            <div class="empty-state text-center py-5">
+              <i class="bi bi-journal-x d-block mb-2"></i>
+              <p class="mb-0">No menu items yet &mdash; add your first dish on the left.</p>
+            </div>
+          </li>
+        }
+      </ul>
+    </div>
+  </section>
 
 </div>

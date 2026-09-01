@@ -8,6 +8,7 @@ export interface MenuItem {
 }
 
 export interface OrderItem {
+  id?: string;
   menuItem: MenuItem;
   quantity: number;
   completed?: boolean;
@@ -19,5 +20,5 @@ export interface Order {
   items: OrderItem[];
   totalAmount: number;
   status: 'pending' | 'completed';
-  createdAt: Date;
+  createdAt: string;
 }

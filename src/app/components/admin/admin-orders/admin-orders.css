@@ -1,0 +1,43 @@
+.order-card {
+  border: none;
+  border-left: 4px solid transparent;
+  border-radius: 0.75rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.order-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+}
+
+.order-card--pending {
+  border-left-color: var(--bs-warning);
+}
+
+.order-card--completed {
+  border-left-color: var(--bs-success);
+}
+
+.order-card--highlighted {
+  box-shadow: 0 0 0 3px var(--bs-warning);
+  animation: order-highlight-fade 2.5s ease-out 1;
+}
+
+@keyframes order-highlight-fade {
+  0% {
+    box-shadow: 0 0 0 5px var(--bs-warning);
+  }
+  100% {
+    box-shadow: 0 0 0 3px var(--bs-warning);
+  }
+}
+
+.order-item-row {
+  cursor: pointer;
+  border-radius: 0.5rem;
+  transition: background-color 0.15s ease;
+}
+
+.order-item-row:hover {
+  background: var(--bs-tertiary-bg) !important;
+}

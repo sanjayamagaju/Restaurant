@@ -1,0 +1,47 @@
+<div class="food-theme min-vh-100 d-flex align-items-center justify-content-center" data-bs-theme="dark">
+  <div class="card glass-card shadow-sm border-0" style="width: 24rem;">
+    <div class="card-body p-4">
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <span class="brand-mark brand-mark-sm">
+          <i class="bi bi-egg-fried"></i>
+        </span>
+        <h3 class="fw-bold app-title-gradient mb-0">Bistro</h3>
+      </div>
+      <p class="text-secondary-emphasis mb-4">Admin sign in</p>
+
+      <form (ngSubmit)="login()">
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+          <input
+            class="form-control"
+            name="username"
+            [(ngModel)]="username"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input
+            class="form-control"
+            type="password"
+            name="password"
+            [(ngModel)]="password"
+            required
+          />
+        </div>
+
+        @if (error()) {
+          <div class="alert alert-danger py-2 d-flex align-items-center gap-2">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span>{{ error() }}</span>
+          </div>
+        }
+
+        <button type="submit" class="btn food-btn w-100 rounded-pill fw-bold py-2">
+          <i class="bi bi-box-arrow-in-right me-2"></i>
+          Sign in
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

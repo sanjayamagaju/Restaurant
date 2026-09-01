@@ -1,17 +1,22 @@
-<div class="container-fluid min-vh-100 bg-body-tertiary">
+<div class="food-theme min-vh-100" data-bs-theme="dark">
 
-  <div class="row">
+  <div class="row g-0">
 
     <!-- Sidebar -->
-    <aside class="col-lg-2 col-md-3 bg-white border-end shadow-sm p-0">
+    <aside class="col-lg-2 col-md-3 admin-sidebar border-end p-0">
 
-      <div class="p-4 border-bottom">
+      <div class="p-4 border-bottom" style="border-color: var(--bs-border-color) !important;">
 
-        <h3 class="fw-bold text-warning mb-1">
-          🍽 Bistro
-        </h3>
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <span class="brand-mark brand-mark-sm">
+            <i class="bi bi-egg-fried"></i>
+          </span>
+          <h3 class="fw-bold app-title-gradient mb-0">
+            Bistro
+          </h3>
+        </div>
 
-        <small class="text-secondary">
+        <small class="text-secondary-emphasis">
           Admin Panel
         </small>
 
@@ -19,12 +24,15 @@
 
       <div class="nav nav-pills flex-column gap-1 p-3">
         @for (item of navItems; track trackByKey($index)) {
-          <a class="nav-link active"
+          <a class="nav-link admin-nav-link d-flex align-items-center gap-2"
              [routerLink]="item.route"
              routerLinkActive="active"
              [routerLinkActiveOptions]="{ exact: true }">
-            <i [ngClass]="item.icon"></i>
+            <i class="bi" [ngClass]="item.icon"></i>
             {{ item.name }}
+            @if (item.key === 'orders' && pendingCount() > 0) {
+              <span class="badge rounded-pill text-bg-warning ms-auto">{{ pendingCount() }}</span>
+            }
           </a>
         }
       </div>
@@ -35,37 +43,66 @@
     <main class="col-lg-10 col-md-9 p-0">
 
       <!-- Navbar -->
-      <nav class="navbar bg-white shadow-sm px-4 py-3 border-bottom">
+      <nav class="navbar admin-navbar px-4 py-3 border-bottom">
 
         <div>
 
-          <h4 class="fw-bold mb-0">
+          <h4 class="fw-bold mb-0 font-display">
             Dashboard
           </h4>
 
-          <small class="text-secondary">
-            Welcome back 👋
+          <small class="text-secondary-emphasis">
+            Welcome back
           </small>
 
         </div>
 
         <div class="d-flex align-items-center gap-3">
 
-          <button class="btn btn-light position-relative">
+          <div class="position-relative">
 
-            <i class="bi bi-bell"></i>
+            <button class="btn admin-bell rounded-circle" style="width: 2.5rem; height: 2.5rem;" aria-label="Pending order notifications" (click)="toggleNotifications()">
 
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            4
-                        </span>
+              <i class="bi bi-bell"></i>
 
-          </button>
+              @if (pendingCount() > 0) {
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill text-bg-danger">
+                  {{ pendingCount() }}
+                </span>
+              }
 
-          <button class="btn btn-warning rounded-pill">
+            </button>
 
-            <i class="bi bi-person-circle me-2"></i>
+            @if (showNotifications()) {
+              <div class="admin-notif-panel shadow rounded-3">
 
-            Admin
+                <h6 class="admin-notif-title mb-0 px-3 py-2 border-bottom">Notifications</h6>
+
+                @if (restaurantService.pendingOrders().length > 0) {
+                  <div class="d-flex flex-column">
+                    @for (order of restaurantService.pendingOrders(); track order.id) {
+                      <button class="btn admin-notif-item text-start rounded-0" (click)="viewOrder(order)">
+                        <i class="bi bi-bell-fill text-warning-emphasis me-2"></i>
+                        <span class="fw-semibold">New order received</span> &mdash; Table {{ order.tableNumber }}
+                        <br>
+                        <small class="text-secondary-emphasis">#{{ order.id.slice(-4) }} &bull; {{ order.createdAt | date: 'shortTime' }}</small>
+                      </button>
+                    }
+                  </div>
+                } @else {
+                  <p class="px-3 py-4 mb-0 text-secondary-emphasis small text-center">No new orders</p>
+                }
+
+              </div>
+            }
+
+          </div>
+
+          <button class="btn food-btn rounded-pill px-3" (click)="logout()">
+
+            <i class="bi bi-box-arrow-right me-2"></i>
+
+            Logout
 
           </button>
 
@@ -79,19 +116,25 @@
         <!-- Stats -->
         <div class="row g-4 mb-4">
 
-          <div class="col-lg-3">
+          <div class="col-lg-3 col-sm-6">
 
-            <div class="card shadow-sm border-0">
+            <div class="card admin-stat-card shadow-sm border-0">
 
-              <div class="card-body">
+              <div class="card-body d-flex align-items-center gap-3">
 
-                <h6 class="text-secondary">
-                  Orders Pending
-                </h6>
+                <span class="admin-stat-icon" style="background: linear-gradient(135deg, #ffb400, #ff8a00);">
+                  <i class="bi bi-hourglass-split"></i>
+                </span>
 
-                <h2 class="fw-bold">
-                  125
-                </h2>
+                <div>
+                  <h6 class="text-secondary-emphasis mb-1">
+                    Orders Pending
+                  </h6>
+
+                  <h2 class="fw-bold mb-0 tabular-nums">
+                    {{ pendingCount() }}
+                  </h2>
+                </div>
 
               </div>
 
@@ -99,52 +142,72 @@
 
           </div>
 
-          <div class="col-lg-3">
+          <div class="col-lg-3 col-sm-6">
 
-            <div class="card shadow-sm border-0">
+            <div class="card admin-stat-card shadow-sm border-0">
 
-              <div class="card-body">
+              <div class="card-body d-flex align-items-center gap-3">
 
-                <h6 class="text-secondary">
-                  Orders Completed Today
-                </h6>
+                <span class="admin-stat-icon" style="background: linear-gradient(135deg, #8bc34a, #558b2f);">
+                  <i class="bi bi-check2-circle"></i>
+                </span>
 
-                <h2 class="fw-bold">
-                  125
-                </h2>
+                <div>
+                  <h6 class="text-secondary-emphasis mb-1">
+                    Completed Today
+                  </h6>
+
+                  <h2 class="fw-bold mb-0 tabular-nums">
+                    {{ completedTodayCount() }}
+                  </h2>
+                </div>
 
               </div>
 
             </div>
           </div>
 
-          <div class="col-lg-3">
-            <div class="card shadow-sm border-0">
-              <div class="card-body">
-                <h6 class="text-secondary">
-                  Revenue
-                </h6>
+          <div class="col-lg-3 col-sm-6">
+            <div class="card admin-stat-card shadow-sm border-0">
+              <div class="card-body d-flex align-items-center gap-3">
 
-                <h2 class="fw-bold">
-                  $2,450
-                </h2>
+                <span class="admin-stat-icon" style="background: linear-gradient(135deg, #ff7a18, #e8492f);">
+                  <i class="bi bi-cash-stack"></i>
+                </span>
+
+                <div>
+                  <h6 class="text-secondary-emphasis mb-1">
+                    Revenue Today
+                  </h6>
+
+                  <h2 class="fw-bold mb-0 tabular-nums">
+                    {{ CURRENCY }}{{ revenueToday().toFixed(2) }}
+                  </h2>
+                </div>
+
               </div>
             </div>
           </div>
 
-          <div class="col-lg-3">
+          <div class="col-lg-3 col-sm-6">
 
-            <div class="card shadow-sm border-0">
+            <div class="card admin-stat-card shadow-sm border-0">
 
-              <div class="card-body">
+              <div class="card-body d-flex align-items-center gap-3">
 
-                <h6 class="text-secondary">
-                  Menu Items
-                </h6>
+                <span class="admin-stat-icon" style="background: linear-gradient(135deg, #e8492f, #c62828);">
+                  <i class="bi bi-journal-bookmark-fill"></i>
+                </span>
 
-                <h2 class="fw-bold">
-                  42
-                </h2>
+                <div>
+                  <h6 class="text-secondary-emphasis mb-1">
+                    Menu Items
+                  </h6>
+
+                  <h2 class="fw-bold mb-0 tabular-nums">
+                    {{ menuItemsCount() }}
+                  </h2>
+                </div>
 
               </div>
 
@@ -155,15 +218,7 @@
         </div>
 
         <!-- Main Content -->
-        <div class="card shadow-sm border-0">
-
-          <div class="card-header bg-white">
-
-            <h5 class="mb-0">
-              Content Area
-            </h5>
-
-          </div>
+        <div class="card admin-content-card shadow-sm border-0">
 
           <div class="card-body">
 
