@@ -1,0 +1,40 @@
+@if (order(); as o) {
+  <div class="card glass-card p-4 order-status-card mb-4">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+      <div>
+        <h2 class="h5 mb-1 font-display">Order #{{ o.id }}</h2>
+        <span class="text-secondary-emphasis small">Table {{ o.tableNumber }}</span>
+      </div>
+      <span class="price-tag">{{ CURRENCY }}{{ o.totalAmount }}</span>
+    </div>
+
+    @if (o.status === 'CANCELLED') {
+      <div class="alert alert-danger d-flex align-items-center gap-2 mb-0">
+        <i class="bi bi-x-circle-fill"></i>
+        This order was cancelled.
+      </div>
+    } @else {
+      <ol class="order-timeline mb-0">
+        @for (step of steps; track step) {
+          <li class="order-timeline-step" [ngClass]="stepState(step)">
+            <span class="order-timeline-marker">
+              @switch (stepState(step)) {
+                @case ('done') { <i class="bi bi-check-lg"></i> }
+                @case ('current') { <i class="bi bi-arrow-right"></i> }
+                @default { <i class="bi bi-circle"></i> }
+              }
+            </span>
+            <span class="order-timeline-label">{{ stepLabel(step) }}</span>
+          </li>
+        }
+      </ol>
+    }
+
+    @if (o.status === 'COMPLETED' || o.status === 'CANCELLED') {
+      <button class="btn btn-outline-light btn-sm rounded-pill mt-3" (click)="dismiss()">
+        <i class="bi bi-bag-plus me-1"></i>
+        Place a new order
+      </button>
+    }
+  </div>
+}

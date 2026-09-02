@@ -1,3 +1,13 @@
+.board-scroll {
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.board-column {
+  flex: 0 0 300px;
+  width: 300px;
+}
+
 .order-card {
   border: none;
   border-left: 4px solid transparent;
@@ -8,14 +18,6 @@
 .order-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
-}
-
-.order-card--pending {
-  border-left-color: var(--bs-warning);
-}
-
-.order-card--completed {
-  border-left-color: var(--bs-success);
 }
 
 .order-card--highlighted {

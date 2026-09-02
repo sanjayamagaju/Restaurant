@@ -1,0 +1,205 @@
+<div class="food-theme kitchen-shell" data-bs-theme="dark">
+
+  @if (isOffline()) {
+    <div class="kitchen-banner kitchen-banner--offline" role="alert">
+      <i class="bi bi-wifi-off me-2"></i>
+      Connection lost &mdash; reconnecting&hellip;
+    </div>
+  }
+
+  @if (actionError()) {
+    <div class="kitchen-banner kitchen-banner--error" role="alert">
+      <i class="bi bi-exclamation-octagon-fill me-2"></i>
+      {{ actionError() }}
+    </div>
+  }
+
+  <header class="kitchen-header">
+    <div class="kitchen-header__brand">
+      <span class="brand-mark brand-mark-sm"><i class="bi bi-egg-fried"></i></span>
+      <div>
+        <h1 class="h4 mb-0 font-display">Bistro Delights</h1>
+        <small class="text-secondary-emphasis">Kitchen Display</small>
+      </div>
+    </div>
+
+    <div class="kitchen-header__clock" aria-label="Current time">
+      {{ clockTime() | date: 'h:mm:ss a' }}
+    </div>
+
+    <div class="kitchen-header__stats">
+      <div class="kitchen-stat">
+        <span class="kitchen-stat__value">{{ activeCount() }}</span>
+        <span class="kitchen-stat__label">Active orders</span>
+      </div>
+      <div class="kitchen-stat" [class.kitchen-stat--alert]="delayedCount() > 0">
+        <span class="kitchen-stat__value">{{ delayedCount() }}</span>
+        <span class="kitchen-stat__label">Delayed</span>
+      </div>
+    </div>
+
+    <div class="kitchen-header__actions">
+      <button
+        class="btn kitchen-btn kitchen-btn--icon"
+        (click)="toggleSound()"
+        [attr.aria-pressed]="!soundMuted()"
+        aria-label="Toggle new-order sound"
+      >
+        <i class="bi" [ngClass]="soundMuted() ? 'bi-volume-mute-fill' : 'bi-volume-up-fill'"></i>
+        Sound {{ soundMuted() ? 'OFF' : 'ON' }}
+      </button>
+      <button class="btn kitchen-btn kitchen-btn--icon" (click)="toggleFullscreen()" aria-label="Toggle fullscreen">
+        <i class="bi bi-arrows-fullscreen"></i>
+      </button>
+      <a class="btn kitchen-btn kitchen-btn--icon" routerLink="/admin" aria-label="Back to admin panel">
+        <i class="bi bi-box-arrow-left"></i>
+      </a>
+    </div>
+  </header>
+
+  <div class="kitchen-toolbar">
+    <div class="kitchen-filter-group" role="tablist" aria-label="Filter orders by status">
+      @for (f of statusFilters; track f.key) {
+        <button
+          class="btn kitchen-filter-chip"
+          [class.active]="statusFilter() === f.key"
+          role="tab"
+          [attr.aria-selected]="statusFilter() === f.key"
+          (click)="setStatusFilter(f.key)"
+        >
+          {{ f.label }}
+        </button>
+      }
+    </div>
+
+    <div class="kitchen-search-group">
+      <input
+        class="form-control kitchen-search-input"
+        placeholder="Filter by table&hellip;"
+        aria-label="Filter by table number"
+        [ngModel]="tableQuery()"
+        (ngModelChange)="tableQuery.set($event)"
+      />
+      <input
+        class="form-control kitchen-search-input"
+        placeholder="Filter by order #&hellip;"
+        aria-label="Filter by order number"
+        [ngModel]="orderQuery()"
+        (ngModelChange)="orderQuery.set($event)"
+      />
+    </div>
+  </div>
+
+  <div class="kitchen-board">
+    @for (column of columns; track column.key) {
+      <section class="kitchen-column">
+        <h2 class="kitchen-column__title">
+          <i class="bi" [ngClass]="column.icon"></i>
+          {{ column.label }}
+          <span class="kitchen-column__count">{{ columnOrders()[column.key].length }}</span>
+        </h2>
+
+        <div class="kitchen-column__cards">
+          @for (order of columnOrders()[column.key]; track order.id) {
+            <div
+              class="kitchen-card"
+              [class.kitchen-card--new]="isNew(order.id)"
+              [ngClass]="'kitchen-card--' + urgency(order)"
+            >
+              <div class="kitchen-card__head">
+                <span class="kitchen-card__order-no">ORDER #{{ order.id }}</span>
+                <span class="badge rounded-pill" [ngClass]="statusMeta(order.status).badgeClass">
+                  {{ statusMeta(order.status).label }}
+                </span>
+              </div>
+
+              <div class="kitchen-card__table">
+                <i class="bi bi-geo-alt-fill me-1"></i>
+                TABLE {{ order.tableNumber }}
+              </div>
+
+              <div class="kitchen-card__timing">
+                <span>{{ order.createdAt | date: 'shortTime' }}</span>
+                <span class="kitchen-card__elapsed" [ngClass]="urgencyMeta(urgency(order)).class">
+                  <i class="bi me-1" [ngClass]="urgencyMeta(urgency(order)).icon"></i>
+                  Elapsed: {{ elapsed(order) }} &middot; {{ urgencyMeta(urgency(order)).text }}
+                </span>
+              </div>
+
+              @if (order.specialInstructions) {
+                <p class="kitchen-card__note">
+                  <i class="bi bi-sticky-fill me-1"></i>
+                  {{ order.specialInstructions }}
+                </p>
+              }
+
+              <ul class="kitchen-card__items">
+                @for (item of order.items; track item.menuItem.id; let i = $index) {
+                  <li
+                    class="kitchen-item-row"
+                    [class.kitchen-item-row--tappable]="order.status === 'PREPARING'"
+                    [class.kitchen-item-row--done]="item.completed"
+                    role="button"
+                    [attr.aria-pressed]="item.completed"
+                    (click)="toggleItem(order, i)"
+                  >
+                    <div class="kitchen-item-row__main">
+                      <i class="bi" [ngClass]="item.completed ? 'bi-check-square-fill' : 'bi-square'"></i>
+                      <span class="kitchen-item-row__qty">{{ item.quantity }} &times;</span>
+                      <span class="kitchen-item-row__name">{{ item.menuItem.name }}</span>
+                    </div>
+                    @if (item.selectedOptions && item.selectedOptions.length > 0) {
+                      <div class="kitchen-item-row__options">
+                        @for (option of item.selectedOptions; track option.optionName) {
+                          <span class="kitchen-item-row__option">{{ option.groupName }}: {{ option.optionName }}</span>
+                        }
+                      </div>
+                    }
+                    @if (item.specialInstructions) {
+                      <p class="kitchen-item-row__note">
+                        <i class="bi bi-sticky-fill me-1"></i>
+                        {{ item.specialInstructions }}
+                      </p>
+                    }
+                  </li>
+                }
+              </ul>
+
+              <div class="kitchen-card__actions">
+                @if (nextAction(order.status); as action) {
+                  <button
+                    class="btn kitchen-btn kitchen-btn--primary"
+                    [disabled]="isUpdating(order.id) || (action.next === 'READY' && !allItemsComplete(order))"
+                    (click)="performAction(order, action.next)"
+                  >
+                    <i class="bi me-2" [ngClass]="action.icon"></i>
+                    {{ action.label }}
+                  </button>
+                  @if (action.next === 'READY' && !allItemsComplete(order)) {
+                    <span class="kitchen-card__hint">Complete all items first</span>
+                  }
+                }
+                @if (canCancel(order.status)) {
+                  <button
+                    class="btn kitchen-btn kitchen-btn--outline-danger"
+                    [disabled]="isUpdating(order.id)"
+                    (click)="performAction(order, 'CANCELLED')"
+                  >
+                    <i class="bi bi-x-lg me-2"></i>
+                    Cancel
+                  </button>
+                }
+              </div>
+            </div>
+          } @empty {
+            <div class="kitchen-column__empty">
+              <i class="bi bi-inbox"></i>
+              <p class="mb-0">Nothing here</p>
+            </div>
+          }
+        </div>
+      </section>
+    }
+  </div>
+
+</div>

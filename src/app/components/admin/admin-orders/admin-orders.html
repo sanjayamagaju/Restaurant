@@ -1,34 +1,61 @@
-<div class="row g-4">
+@if (actionError()) {
+  <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" role="alert">
+    <i class="bi bi-exclamation-octagon-fill"></i>
+    <span>{{ actionError() }}</span>
+  </div>
+}
 
-  <!-- Order Management Section -->
-  <section class="col-lg-8">
-    <div class="card glass-card p-4">
-      <h2 class="h5 section-title pb-2 mb-4 font-display">
-        <i class="bi bi-hourglass-split text-warning-emphasis me-2"></i>
-        Pending Orders
-      </h2>
+<!-- Kitchen / order pipeline board -->
+<div class="board-scroll mb-5">
+  <div class="d-flex gap-3 align-items-start">
+    @for (column of columns; track column.key) {
+      <div class="board-column">
+        <h2 class="h6 section-title pb-2 mb-3 font-display d-flex align-items-center gap-2">
+          <i class="bi" [ngClass]="column.icon"></i>
+          {{ column.label }}
+          <span class="badge rounded-pill text-bg-secondary ms-auto">{{ ordersByColumn()[column.key].length }}</span>
+        </h2>
 
-      @if (restaurantService.pendingOrders().length > 0) {
         <div class="d-flex flex-column gap-3">
-          @for (order of restaurantService.pendingOrders(); track order.id) {
+          @for (order of ordersByColumn()[column.key]; track order.id) {
             <div
               [id]="'order-' + order.id"
-              class="card order-card order-card--pending"
+              class="card order-card"
               [class.order-card--highlighted]="highlightedOrderId() === order.id"
             >
               <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="d-flex justify-content-between align-items-start mb-2">
                   <div>
-                      <span class="badge rounded-pill text-bg-secondary mb-1"
-                      >#{{ order.id.slice(-4) }}-{{ order.createdAt | date: 'HH:mm' }}</span
-                      >
-                    <h3 class="h5 mb-0 d-flex align-items-center gap-2">
+                    <span class="badge rounded-pill text-bg-secondary mb-1">#{{ order.id }}</span>
+                    <h3 class="h6 mb-0 d-flex align-items-center gap-2">
                       <i class="bi bi-geo-alt-fill text-warning-emphasis"></i>
                       Table {{ order.tableNumber }}
                     </h3>
                   </div>
-                  <span class="text-secondary-emphasis small">{{ order.createdAt | date: 'shortTime' }}</span>
+                  <span class="badge rounded-pill" [ngClass]="statusMeta(order.status).badgeClass">
+                    <i class="bi me-1" [ngClass]="statusMeta(order.status).icon"></i>
+                    {{ statusMeta(order.status).label }}
+                  </span>
                 </div>
+
+                <!-- Timing -->
+                <div class="d-flex flex-wrap align-items-center gap-2 small text-secondary-emphasis mb-2">
+                  <span><i class="bi bi-clock-history me-1"></i>Created {{ order.createdAt | date: 'shortTime' }}</span>
+                  <span class="tabular-nums">&bull; {{ column.label }} for {{ elapsedLabel(statusStartedAt(order)) }}</span>
+                </div>
+
+                <!-- Delay indicator -->
+                <span class="badge rounded-pill mb-2" [ngClass]="urgencyMeta(urgency(order)).class">
+                  <i class="bi me-1" [ngClass]="urgencyMeta(urgency(order)).icon"></i>
+                  {{ urgencyMeta(urgency(order)).text }}
+                </span>
+
+                @if (order.specialInstructions) {
+                  <p class="small text-warning-emphasis mb-2">
+                    <i class="bi bi-sticky-fill me-1"></i>
+                    {{ order.specialInstructions }}
+                  </p>
+                }
 
                 <ul class="list-group list-group-flush mb-3">
                   @for (item of order.items; track item.menuItem.id; let i = $index) {
@@ -43,57 +70,85 @@
                       <i class="bi me-2" [ngClass]="item.completed ? 'bi-check-circle-fill text-success-emphasis' : 'bi-circle'"></i>
                       <span class="fw-bold text-warning-emphasis me-1 tabular-nums">{{ item.quantity }}x</span>
                       {{ item.menuItem.name }}
+                      @if (item.selectedOptions && item.selectedOptions.length > 0) {
+                        <div class="small text-secondary-emphasis ps-4">
+                          @for (option of item.selectedOptions; track option.optionName) {
+                            <span class="me-2">{{ option.groupName }}: {{ option.optionName }}</span>
+                          }
+                        </div>
+                      }
+                      @if (item.specialInstructions) {
+                        <div class="small fst-italic text-warning-emphasis ps-4">
+                          <i class="bi bi-sticky-fill me-1"></i>{{ item.specialInstructions }}
+                        </div>
+                      }
                     </li>
                   }
                 </ul>
 
-                <div
-                  class="d-flex justify-content-between align-items-center pt-3 border-top border-secondary-subtle"
-                >
+                <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary-subtle mb-3">
                   <span class="price-tag tabular-nums">Total: {{ CURRENCY }}{{ order.totalAmount }}</span>
-                  <button (click)="restaurantService.completeOrder(order.id)" class="btn food-btn rounded-pill px-3">
-                    <i class="bi bi-check2-circle me-2"></i>
-                    Mark Complete
-                  </button>
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap">
+                  @if (nextAction(order.status); as action) {
+                    <button
+                      (click)="performAction(order, action.next)"
+                      [disabled]="isUpdating(order.id)"
+                      class="btn food-btn btn-sm rounded-pill px-3"
+                    >
+                      <i class="bi me-1" [ngClass]="action.icon"></i>
+                      {{ action.label }}
+                    </button>
+                  }
+                  @if (canCancel(order.status)) {
+                    <button
+                      (click)="performAction(order, 'CANCELLED')"
+                      [disabled]="isUpdating(order.id)"
+                      class="btn btn-outline-danger btn-sm rounded-pill px-3"
+                    >
+                      <i class="bi bi-x-lg me-1"></i>
+                      Cancel
+                    </button>
+                  }
                 </div>
               </div>
             </div>
+          } @empty {
+            <div class="empty-state text-center py-4">
+              <i class="bi bi-inbox d-block mb-2"></i>
+              <p class="mb-0 small">Nothing here</p>
+            </div>
           }
         </div>
-      } @else {
-        <div class="empty-state text-center py-5">
-          <i class="bi bi-check2-all d-block mb-2"></i>
-          <p class="mb-0">All caught up &mdash; no pending orders right now.</p>
-        </div>
-      }
-    </div>
-  </section>
+      </div>
+    }
+  </div>
+</div>
 
-  <!-- Completed Orders -->
-  <section class="col-lg-4">
-    <div class="card glass-card p-4 h-100">
-      <h2 class="h5 section-title pb-2 mb-4 font-display">
-        <i class="bi bi-check2-circle text-success-emphasis me-2"></i>
-        Today's Completed Orders
-      </h2>
+<!-- History: completed / cancelled today -->
+<section>
+  <div class="card glass-card p-4">
+    <h2 class="h5 section-title pb-2 mb-4 font-display">
+      <i class="bi bi-archive text-secondary-emphasis me-2"></i>
+      Today's History
+    </h2>
 
-      @if (restaurantService.completedOrders().length > 0) {
-        <div class="d-flex flex-column gap-3">
-          @for (order of restaurantService.completedOrders().slice().reverse(); track order.id) {
-            <div class="card order-card order-card--completed">
+    @if (historyOrders().length > 0) {
+      <div class="row row-cols-1 row-cols-lg-2 g-3">
+        @for (order of historyOrders(); track order.id) {
+          <div class="col">
+            <div class="card order-card h-100">
               <div class="card-body py-3">
                 <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                   <div>
-                    <span class="badge rounded-pill text-bg-secondary mb-1"
-                    >#{{ order.id.slice(-4) }}-{{ order.createdAt | date: 'HH:mm' }}</span
-                    >
+                    <span class="badge rounded-pill text-bg-secondary mb-1">#{{ order.id }}</span>
                     <h4 class="h6 mb-0">Table {{ order.tableNumber }}</h4>
                   </div>
-                  <div class="d-flex align-items-center gap-2">
-                    <span class="badge rounded-pill text-bg-success"
-                    >Completed {{ order.createdAt | date: 'shortTime' }}</span
-                    >
-                  </div>
+                  <span class="badge rounded-pill" [ngClass]="statusMeta(order.status).badgeClass">
+                    <i class="bi me-1" [ngClass]="statusMeta(order.status).icon"></i>
+                    {{ statusMeta(order.status).label }}
+                  </span>
                 </div>
 
                 <button (click)="toggleDetails(order.id)" class="btn btn-sm btn-outline-light rounded-pill mt-2 w-100">
@@ -108,6 +163,11 @@
                         <li class="list-group-item bg-transparent px-0 text-decoration-line-through opacity-50">
                           <span class="fw-bold me-1 tabular-nums">{{ item.quantity }}x</span>
                           {{ item.menuItem.name }}
+                          @if (item.selectedOptions && item.selectedOptions.length > 0) {
+                            <span class="small">
+                              ({{ item.selectedOptions[0].optionName }}{{ item.selectedOptions.length > 1 ? ', …' : '' }})
+                            </span>
+                          }
                         </li>
                       }
                     </ul>
@@ -116,14 +176,14 @@
                 }
               </div>
             </div>
-          }
-        </div>
-      } @else {
-        <div class="empty-state text-center py-5">
-          <i class="bi bi-cup-hot d-block mb-2"></i>
-          <p class="mb-0">No completed orders today yet.</p>
-        </div>
-      }
-    </div>
-  </section>
-</div>
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="empty-state text-center py-5">
+        <i class="bi bi-cup-hot d-block mb-2"></i>
+        <p class="mb-0">No completed or cancelled orders today yet.</p>
+      </div>
+    }
+  </div>
+</section>

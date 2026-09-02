@@ -1,0 +1,46 @@
+.admin-menu-tabs .tab-btn {
+  border-radius: 999px;
+  border: 1px solid var(--bs-border-color);
+  background: var(--bs-tertiary-bg);
+  color: var(--bs-body-color);
+  font-weight: 600;
+  padding: 0.4rem 1.1rem;
+}
+
+.admin-menu-tabs .tab-btn.active {
+  background: linear-gradient(135deg, #ff7a18 0%, #e8492f 100%);
+  border-color: transparent;
+  color: #fff;
+}
+
+.menu-filter-bar select,
+.menu-filter-bar input {
+  background: var(--bs-tertiary-bg);
+  color: var(--bs-body-color);
+  border-color: var(--bs-border-color);
+}
+
+.admin-menu-table th {
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.table-row-editing {
+  background: var(--bs-warning-bg-subtle);
+}
+
+.option-group-admin {
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+
+.option-admin-row {
+  padding: 0.25rem 0;
+}
+
+.inline-form {
+  background: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.6rem;
+  padding: 0.75rem;
+}

@@ -1,11 +1,12 @@
-import {Component, OnInit, computed, inject, signal} from '@angular/core';
+import {Component, OnDestroy, OnInit, computed, inject, signal} from '@angular/core';
 import {DatePipe, NgClass} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {Router, RouterLink, RouterLinkActive, RouterOutlet} from '@angular/router';
 import {AuthService} from '../../services/auth.service';
 import {RestaurantService} from '../../services/restaurant.service';
-import {Order} from '../../models/types';
+import {NotificationService} from '../../services/notification.service';
 import {CURRENCY} from '../../utils/constants';
+import {isToday} from '../../utils/order-timing';
 
 
 interface NavItem {
@@ -29,10 +30,11 @@ interface NavItem {
   templateUrl: './admin.html',
   styleUrl: './admin.css',
 })
-export class Admin implements OnInit {
+export class Admin implements OnInit, OnDestroy {
   private authService = inject(AuthService);
   private router = inject(Router);
   restaurantService = inject(RestaurantService);
+  notificationService = inject(NotificationService);
   protected readonly CURRENCY = CURRENCY;
 
   navItems: NavItem[] = [
@@ -48,29 +50,49 @@ export class Admin implements OnInit {
       icon: 'bi-journal-bookmark',
       route: 'menus',
     },
+    {
+      key: 'tables',
+      name: 'Tables',
+      icon: 'bi-qr-code',
+      route: 'tables',
+    },
+    {
+      key: 'kitchen',
+      name: 'Kitchen Display',
+      icon: 'bi-fire',
+      route: '/admin/kitchen',
+    },
   ]
 
-  private isToday(isoDate: string) {
-    const d = new Date(isoDate);
-    const now = new Date();
-    return d.toDateString() === now.toDateString();
-  }
-
-  completedToday = computed(() =>
-    this.restaurantService.completedOrders().filter(o => this.isToday(o.createdAt))
+  completedTodayCount = computed(() =>
+    this.restaurantService.completedOrders().filter(o => isToday(o.completedAt ?? o.createdAt, Date.now())).length
   );
-
-  pendingCount = computed(() => this.restaurantService.pendingOrders().length);
-  completedTodayCount = computed(() => this.completedToday().length);
+  cancelledTodayCount = computed(() =>
+    this.restaurantService.cancelledOrders().filter(o => isToday(o.cancelledAt ?? o.createdAt, Date.now())).length
+  );
   revenueToday = computed(() =>
-    this.completedToday().reduce((sum, o) => sum + o.totalAmount, 0)
+    this.restaurantService.completedOrders()
+      .filter(o => isToday(o.completedAt ?? o.createdAt, Date.now()))
+      .reduce((sum, o) => sum + o.totalAmount, 0)
   );
+
+  pendingCount = computed(() => this.restaurantService.pendingCount());
+  newCount = computed(() => this.restaurantService.newOrders().length);
+  preparingCount = computed(() => this.restaurantService.preparingOrders().length);
+  readyCount = computed(() => this.restaurantService.readyOrders().length);
+  servedCount = computed(() => this.restaurantService.servedOrders().length);
   menuItemsCount = computed(() => this.restaurantService.menuItems().length);
+  connectionState = computed(() => this.restaurantService.connectionState());
 
   showNotifications = signal(false);
 
   ngOnInit() {
     this.restaurantService.loadOrders();
+    this.restaurantService.connectStaffSocket();
+  }
+
+  ngOnDestroy() {
+    this.restaurantService.disconnectStaffSocket();
   }
 
   trackByKey(index: number) {
@@ -78,6 +100,7 @@ export class Admin implements OnInit {
   }
 
   logout() {
+    this.restaurantService.disconnectStaffSocket();
     this.authService.logout();
     this.router.navigateByUrl('/admin-login');
   }
@@ -86,9 +109,14 @@ export class Admin implements OnInit {
     this.showNotifications.update(v => !v);
   }
 
-  viewOrder(order: Order) {
+  markAllNotificationsRead() {
+    this.notificationService.markAllAsRead();
+  }
+
+  viewNotification(notification: { id: string; orderId: string }) {
+    this.notificationService.markAsRead(notification.id);
     this.showNotifications.set(false);
-    this.router.navigate(['/admin/orders'], { queryParams: { orderId: order.id } });
+    this.router.navigate(['/admin/orders'], { queryParams: { orderId: notification.orderId } });
   }
 
 }

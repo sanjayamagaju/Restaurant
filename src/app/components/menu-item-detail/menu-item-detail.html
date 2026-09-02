@@ -1,0 +1,147 @@
+<div class="item-modal-backdrop" (click)="closed.emit()"></div>
+
+<div class="item-detail-modal" role="dialog" aria-modal="true" [attr.aria-label]="menuItem.name">
+  <button type="button" class="btn item-detail-modal__close" (click)="closed.emit()" aria-label="Close">
+    <i class="bi bi-x-lg"></i>
+  </button>
+
+  <div class="item-detail-modal__scroll">
+    <div class="item-detail-modal__hero">
+      @if (menuItem.imageUrl) {
+        <img [src]="menuItem.imageUrl" [alt]="menuItem.name" class="item-detail-modal__image" />
+      } @else {
+        <div class="item-detail-modal__image item-detail-modal__image--placeholder">
+          <i class="bi bi-egg-fried"></i>
+        </div>
+      }
+      @if (menuItem.isSpecial) {
+        <span class="special-ribbon">
+          <i class="bi bi-fire me-1"></i>
+          Special
+        </span>
+      }
+      @if (!menuItem.available) {
+        <span class="item-detail-modal__sold-out-badge">Sold Out</span>
+      }
+    </div>
+
+    <div class="item-detail-modal__body">
+      <h2 class="h4 font-display mb-1">{{ menuItem.name }}</h2>
+      @if (menuItem.description) {
+        <p class="text-secondary-emphasis mb-2">{{ menuItem.description }}</p>
+      }
+
+      <div class="d-flex align-items-center flex-wrap gap-3 mb-3">
+        <span class="price-tag">{{ CURRENCY }}{{ menuItem.price.toFixed(2) }}</span>
+        @if (menuItem.preparationTime) {
+          <span class="small text-secondary-emphasis">
+            <i class="bi bi-clock-history me-1"></i>
+            Ready in ~{{ menuItem.preparationTime }} min
+          </span>
+        }
+      </div>
+
+      @if (!menuItem.available) {
+        <div class="alert alert-danger py-2 small d-flex align-items-center gap-2" role="alert">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          This item is currently sold out and cannot be added to your order.
+        </div>
+      }
+
+      @for (group of activeGroups(); track group.id) {
+        <fieldset class="option-group mb-3">
+          <legend class="option-group__title">
+            {{ group.name }}
+            @if (group.required) {
+              <span class="option-group__required" aria-hidden="true">*</span>
+            }
+            <span class="option-group__hint">
+              @if (group.maxSelection === 1) {
+                (choose 1)
+              } @else if (group.minSelection > 0) {
+                (select {{ group.minSelection }}-{{ group.maxSelection }})
+              } @else {
+                (select up to {{ group.maxSelection }})
+              }
+            </span>
+          </legend>
+
+          @for (option of activeOptions(group); track option.id) {
+            <label class="option-row" [class.option-row--selected]="isSelected(group.id, option.id)">
+              @if (group.maxSelection === 1) {
+                <input
+                  type="radio"
+                  [name]="'group-' + group.id"
+                  [checked]="isSelected(group.id, option.id)"
+                  (change)="selectSingle(group, option.id)"
+                />
+              } @else {
+                <input
+                  type="checkbox"
+                  [checked]="isSelected(group.id, option.id)"
+                  [disabled]="!isSelected(group.id, option.id) && selectionCount(group) >= group.maxSelection"
+                  (change)="toggleMulti(group, option.id)"
+                />
+              }
+              <span class="option-row__name">{{ option.name }}</span>
+              @if (option.additionalPrice > 0) {
+                <span class="option-row__price">+ {{ CURRENCY }}{{ option.additionalPrice.toFixed(2) }}</span>
+              }
+            </label>
+          }
+
+          @if (showGroupError(group)) {
+            <p class="option-group__error" role="alert">
+              <i class="bi bi-exclamation-circle-fill me-1"></i>
+              {{ groupError(group) }}
+            </p>
+          }
+        </fieldset>
+      }
+
+      <div class="mb-3">
+        <label class="small text-secondary-emphasis mb-1" for="itemInstructions">
+          Special instructions <span class="text-body-tertiary">(optional)</span>
+        </label>
+        <textarea
+          id="itemInstructions"
+          class="form-control"
+          rows="2"
+          maxlength="500"
+          placeholder="e.g. no onions, extra spicy"
+          [ngModel]="specialInstructions()"
+          (ngModelChange)="specialInstructions.set($event)"
+        ></textarea>
+      </div>
+
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <span class="fw-semibold">Quantity</span>
+        <div class="qty-stepper qty-stepper--lg">
+          <button type="button" class="btn qty-btn" (click)="decrementQty()" [disabled]="quantity() <= 1" aria-label="Decrease quantity">
+            <i class="bi bi-dash-lg"></i>
+          </button>
+          <span class="tabular-nums fw-bold fs-5" style="min-width: 2em; text-align: center;">{{ quantity() }}</span>
+          <button type="button" class="btn qty-btn" (click)="incrementQty()" aria-label="Increase quantity">
+            <i class="bi bi-plus-lg"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="item-detail-modal__footer">
+    <div class="d-flex justify-content-between fs-5 fw-bold mb-2">
+      <span>Total</span>
+      <span class="text-warning tabular-nums">{{ CURRENCY }}{{ totalPrice().toFixed(2) }}</span>
+    </div>
+    <button
+      type="button"
+      class="btn food-btn w-100 rounded-pill fw-bold py-2"
+      [disabled]="!menuItem.available"
+      (click)="submit()"
+    >
+      <i class="bi bi-bag-plus-fill me-2"></i>
+      {{ isEditing ? 'Update Cart' : 'Add to Cart' }}
+    </button>
+  </div>
+</div>

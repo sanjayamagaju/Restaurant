@@ -50,19 +50,66 @@
   }
 
   @if (restaurantService.currentTable()) {
+    <app-customer-order-status></app-customer-order-status>
+
     <div class="row g-4">
       <div class="col-lg-8">
-        <!-- Today's Specials -->
-        @if (restaurantService.specialMenuItems().length > 0) {
+
+        <!-- Search -->
+        <div class="input-group mb-3 menu-search">
+          <span class="input-group-text bg-transparent border-secondary-subtle">
+            <i class="bi bi-search"></i>
+          </span>
+          <input
+            type="search"
+            class="form-control"
+            placeholder="Search dishes, ingredients, categories..."
+            aria-label="Search the menu"
+            [ngModel]="restaurantService.menuSearchQuery()"
+            (ngModelChange)="updateSearch($event)"
+          />
+        </div>
+
+        <!-- Category navigation -->
+        <nav class="category-nav mb-4" aria-label="Menu categories">
+          @for (tab of categoryTabs(); track tab.id) {
+            <button
+              type="button"
+              class="btn category-pill"
+              [class.active]="restaurantService.selectedCategoryId() === tab.id"
+              (click)="selectCategory(tab.id)"
+            >
+              @if (tab.id === SPECIALS_CATEGORY_ID) {
+                <i class="bi bi-fire me-1"></i>
+              }
+              {{ tab.name }}
+            </button>
+          }
+        </nav>
+
+        <!-- Menu sections -->
+        @for (group of restaurantService.menuDisplayGroups(); track group.id) {
           <div class="mb-5">
             <h2 class="h4 section-title pb-2 mb-4 font-display">
-              <i class="bi bi-fire text-danger-emphasis me-2"></i>
-              Today's Specials
+              @if (group.id === SPECIALS_CATEGORY_ID) {
+                <i class="bi bi-fire text-danger-emphasis me-2"></i>
+              } @else {
+                <i class="bi bi-journal-bookmark-fill me-2"></i>
+              }
+              {{ group.name }}
             </h2>
             <div class="row row-cols-1 row-cols-md-2 g-4">
-              @for (item of restaurantService.specialMenuItems(); track item.id; let i = $index) {
+              @for (item of group.items; track item.id; let i = $index) {
                 <div class="col menu-card-enter" [style.animation-delay.ms]="i * 70">
-                  <div class="card border-0 text-white menu-poster-card menu-poster-card--special">
+                  <div
+                    class="card border-0 text-white menu-poster-card"
+                    [class.menu-poster-card--special]="item.isSpecial"
+                    [class.menu-poster-card--sold-out]="!item.available"
+                    role="button"
+                    [attr.tabindex]="item.available ? 0 : -1"
+                    (click)="openItem(item)"
+                    (keyup.enter)="openItem(item)"
+                  >
                     @if (item.imageUrl) {
                       <img
                         [src]="item.imageUrl"
@@ -76,78 +123,55 @@
                         <i class="bi bi-egg-fried"></i>
                       </div>
                     }
-                    <span class="special-ribbon">
-                      <i class="bi bi-fire me-1"></i>
-                      Special
-                    </span>
+                    @if (item.isSpecial) {
+                      <span class="special-ribbon">
+                        <i class="bi bi-fire me-1"></i>
+                        Special
+                      </span>
+                    }
                     <span class="price-tag position-absolute top-0 end-0 m-2 shadow-sm"
                     >{{ CURRENCY }}{{ item.price.toFixed(2) }}</span
                     >
                     <div class="card-img-overlay d-flex flex-column justify-content-end menu-overlay-gradient">
                       <h3 class="h5 mb-1 fw-bold font-display">{{ item.name }}</h3>
-                      <p class="small mb-3 text-white-50">{{ item.description }}</p>
-                      <button
-                        (click)="addToCart(item)"
-                        class="btn food-btn w-100 rounded-pill fw-bold py-2 px-4 shadow position-relative overflow-hidden">
-                        <i class="bi bi-bag-plus-fill me-2"></i>
-                        Add to Order
-                      </button>
+                      <p class="small mb-1 text-white-50 menu-card-desc">{{ item.description }}</p>
+                      @if (item.preparationTime) {
+                        <p class="small mb-2 text-white-50">
+                          <i class="bi bi-clock-history me-1"></i>
+                          Ready in ~{{ item.preparationTime }} min
+                        </p>
+                      }
+                      @if (item.available) {
+                        <button
+                          type="button"
+                          (click)="$event.stopPropagation(); openItem(item)"
+                          class="btn food-btn w-100 rounded-pill fw-bold py-2 px-4 shadow position-relative overflow-hidden">
+                          <i class="bi bi-bag-plus-fill me-2"></i>
+                          Add to Order
+                        </button>
+                      } @else {
+                        <button type="button" class="btn btn-secondary w-100 rounded-pill fw-bold py-2 px-4" disabled aria-disabled="true">
+                          <i class="bi bi-slash-circle me-2"></i>
+                          Sold Out
+                        </button>
+                      }
                     </div>
                   </div>
                 </div>
               }
             </div>
           </div>
-        }
-
-        <!-- Regular Menu -->
-        <div>
-          <h2 class="h4 section-title pb-2 mb-4 font-display">
-            <i class="bi bi-journal-bookmark-fill me-2"></i>
-            Regular Menu
-          </h2>
-          <div class="row row-cols-1 row-cols-md-2 g-4">
-            @for (item of restaurantService.regularMenuItems(); track item.id; let i = $index) {
-              <div class="col menu-card-enter" [style.animation-delay.ms]="i * 70">
-                <div class="card border-0 text-white menu-poster-card">
-                  @if (item.imageUrl) {
-                    <img
-                      [src]="item.imageUrl"
-                      [alt]="item.name"
-                      class="position-absolute top-0 start-0 w-100 h-100 object-fit-cover menu-poster-img"
-                    />
-                  } @else {
-                    <div
-                      class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center menu-placeholder menu-poster-img"
-                    >
-                      <i class="bi bi-egg-fried"></i>
-                    </div>
-                  }
-                  <span class="price-tag position-absolute top-0 end-0 m-2 shadow-sm"
-                  >{{ CURRENCY }}{{ item.price.toFixed(2) }}</span
-                  >
-                  <div class="card-img-overlay d-flex flex-column justify-content-end menu-overlay-gradient">
-                    <h3 class="h5 mb-1 fw-bold font-display">{{ item.name }}</h3>
-                    <p class="small mb-3 text-white-50">{{ item.description }}</p>
-                    <button
-                      (click)="addToCart(item)"
-                      class="btn food-btn w-100 rounded-pill fw-bold py-2 px-4 shadow position-relative overflow-hidden">
-                      <i class="bi bi-bag-plus-fill me-2"></i>
-                      Add to Order
-                    </button>
-                  </div>
-                </div>
-              </div>
-            } @empty {
-              <div class="col">
-                <div class="empty-state text-center py-5">
-                  <i class="bi bi-egg-fried d-block mb-2"></i>
-                  <p class="mb-0">No regular menu items available yet &mdash; check back soon!</p>
-                </div>
-              </div>
+        } @empty {
+          <div class="empty-state text-center py-5">
+            @if (restaurantService.hasSearchQuery()) {
+              <i class="bi bi-search d-block mb-2"></i>
+              <p class="mb-0">No dishes found for &ldquo;{{ restaurantService.menuSearchQuery() }}&rdquo;.</p>
+            } @else {
+              <i class="bi bi-egg-fried d-block mb-2"></i>
+              <p class="mb-0">No items available in this category.</p>
             }
           </div>
-        </div>
+        }
       </div>
 
       <!-- Cart Section -->
@@ -163,42 +187,91 @@
             Your Order
           </h2>
 
-          @if (cartItems().length > 0) {
+          @if (orderError()) {
+            <div class="alert alert-danger py-2 small d-flex align-items-start gap-2" role="alert">
+              <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+              <span>{{ orderError() }}</span>
+            </div>
+          }
+
+          @if (cartLines().length > 0) {
             <ul class="list-group list-group-flush mb-3">
-              @for (cItem of cartItems(); track cItem.menuItem.id) {
-                <li
-                  class="list-group-item bg-transparent d-flex justify-content-between align-items-center px-0"
-                >
-                  <div class="d-flex flex-column">
-                    <span class="fw-semibold">{{ cItem.menuItem.name }}</span>
-                    <span class="text-secondary-emphasis small tabular-nums"
-                    >{{ CURRENCY }}{{ (cItem.menuItem.price * cItem.quantity).toFixed(2) }}</span
-                    >
-                  </div>
-                  <div class="d-flex align-items-center gap-2 qty-stepper">
+              @for (line of cartLines(); track line.key) {
+                <li class="list-group-item bg-transparent px-0 cart-line">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div class="d-flex flex-column">
+                      <span class="fw-semibold">{{ line.menuItem.name }}</span>
+                      @for (option of line.selectedOptions; track option.optionId) {
+                        <span class="text-secondary-emphasis small cart-line__option">
+                          {{ option.groupName }}: {{ option.optionName }}
+                          @if (option.additionalPrice > 0) {
+                            (+{{ CURRENCY }}{{ option.additionalPrice.toFixed(2) }})
+                          }
+                        </span>
+                      }
+                      @if (line.specialInstructions) {
+                        <span class="text-secondary-emphasis small fst-italic cart-line__note">
+                          <i class="bi bi-sticky-fill me-1"></i>"{{ line.specialInstructions }}"
+                        </span>
+                      }
+                      <span class="text-secondary-emphasis small tabular-nums mt-1"
+                      >{{ CURRENCY }}{{ (lineUnitPrice(line) * line.quantity).toFixed(2) }}</span
+                      >
+                    </div>
                     <button
-                      (click)="updateQuantity(cItem.menuItem, -1)"
-                      [attr.aria-label]="cItem.quantity === 1 ? 'Remove ' + cItem.menuItem.name : 'Decrease quantity'"
+                      type="button"
+                      class="btn btn-sm btn-link text-secondary-emphasis p-0"
+                      (click)="editCartLine(line)"
+                      aria-label="Edit customization"
+                    >
+                      <i class="bi bi-pencil-fill"></i>
+                    </button>
+                  </div>
+                  <div class="d-flex align-items-center gap-2 qty-stepper mt-2">
+                    <button
+                      (click)="updateLineQuantity(line, -1)"
+                      [attr.aria-label]="line.quantity === 1 ? 'Remove ' + line.menuItem.name : 'Decrease quantity'"
                       class="btn btn-sm qty-btn"
                     >
-                      <i class="bi" [ngClass]="cItem.quantity === 1 ? 'bi-trash3-fill' : 'bi-dash-lg'"></i>
+                      <i class="bi" [ngClass]="line.quantity === 1 ? 'bi-trash3-fill' : 'bi-dash-lg'"></i>
                     </button>
-                    <span class="tabular-nums fw-semibold" style="min-width: 1.5em; text-align: center;">{{ cItem.quantity }}</span>
+                    <span class="tabular-nums fw-semibold" style="min-width: 1.5em; text-align: center;">{{ line.quantity }}</span>
                     <button
-                      (click)="updateQuantity(cItem.menuItem, 1)"
+                      (click)="updateLineQuantity(line, 1)"
                       aria-label="Increase quantity"
                       class="btn btn-sm qty-btn"
                     >
                       <i class="bi bi-plus-lg"></i>
                     </button>
+                    <button
+                      (click)="removeLine(line)"
+                      aria-label="Remove item"
+                      class="btn btn-sm qty-btn ms-auto"
+                    >
+                      <i class="bi bi-x-lg"></i>
+                    </button>
                   </div>
                 </li>
               }
             </ul>
+            <div class="mt-3">
+              <label class="small text-secondary-emphasis mb-1" for="orderNotes">
+                Order notes <span class="text-body-tertiary">(optional)</span>
+              </label>
+              <textarea
+                id="orderNotes"
+                class="form-control"
+                rows="2"
+                maxlength="500"
+                placeholder="e.g. cutlery for 2, birthday candle"
+                [ngModel]="orderNotes()"
+                (ngModelChange)="orderNotes.set($event)"
+              ></textarea>
+            </div>
             <div
-              class="d-flex justify-content-between fs-5 fw-bold pt-3 border-top border-2 border-secondary-subtle"
+              class="d-flex justify-content-between fs-5 fw-bold pt-3 border-top border-2 border-secondary-subtle mt-3"
             >
-              <span>Total:</span>
+              <span>Estimated Total:</span>
               <span class="text-warning tabular-nums">{{ CURRENCY }}{{ cartTotal().toFixed(2) }}</span>
             </div>
             <button
@@ -227,3 +300,12 @@
   }
   </div>
 </div>
+
+@if (activeItem(); as item) {
+  <app-menu-item-detail
+    [menuItem]="item"
+    [initialSelection]="activeItemInitialSelection()"
+    (addToCart)="onAddToCart($event)"
+    (closed)="closeItemDetail()"
+  ></app-menu-item-detail>
+}
