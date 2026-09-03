@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { tap } from 'rxjs';
 import {
-  CartLine, MenuCategory, MenuItem, MenuItemOption, MenuItemOptionGroup,
+  CancellationReason, CartLine, MenuCategory, MenuItem, MenuItemOption, MenuItemOptionGroup,
   Order, OrderItem, OrderStatus, Table,
 } from '../models/types';
 import { environment } from '../../environments/environment';
@@ -394,11 +394,22 @@ export class RestaurantService {
     );
   }
 
-  /** Staff-only: transition an order to a new lifecycle status. */
-  updateOrderStatus(orderId: string, status: OrderStatus) {
-    return this.http.patch<Order>(`${this.apiUrl}/orders/${orderId}/`, { status }).pipe(
+  /** Staff-only: transition an order to a new lifecycle status.
+   *
+   * `cancellationReason` is only recorded when the target status is CANCELLED;
+   * the backend ignores it on any other transition. */
+  updateOrderStatus(orderId: string, status: OrderStatus, cancellationReason?: CancellationReason) {
+    const payload: { status: OrderStatus; cancellationReason?: CancellationReason } = { status };
+    if (cancellationReason) payload.cancellationReason = cancellationReason;
+
+    return this.http.patch<Order>(`${this.apiUrl}/orders/${orderId}/`, payload).pipe(
       tap(updated => this.upsertOrder(this.normalizeOrder(updated))),
     );
+  }
+
+  /** Customer-facing: rate a completed order. Anonymous, one rating per order. */
+  submitFeedback(orderId: string, rating: number, comment = '') {
+    return this.http.post(`${this.apiUrl}/orders/${orderId}/feedback/`, { rating, comment });
   }
 
   toggleOrderItemStatus(orderId: string, itemIndex: number) {

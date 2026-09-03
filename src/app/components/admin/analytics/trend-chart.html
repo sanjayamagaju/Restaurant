@@ -1,0 +1,88 @@
+@if (state().loading) {
+
+  <div class="analytics-chart-skeleton" role="status">
+    <span class="visually-hidden">Loading {{ title() }}&hellip;</span>
+  </div>
+
+} @else if (state().error) {
+
+  <div class="text-center py-5">
+    <p class="mb-2 text-secondary-emphasis">
+      <i class="bi bi-exclamation-triangle-fill text-warning-emphasis me-1" aria-hidden="true"></i>
+      Unable to load {{ title().toLowerCase() }}.
+    </p>
+    <button type="button" class="btn btn-sm food-btn rounded-pill px-3" (click)="retry()">
+      <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i> Try Again
+    </button>
+  </div>
+
+} @else if (!plotted().length || isEmpty()) {
+
+  <p class="text-center text-secondary-emphasis py-5 mb-0">
+    <i class="bi bi-graph-up me-1" aria-hidden="true"></i>
+    No {{ isCurrency() ? 'revenue' : 'orders' }} recorded for this period.
+  </p>
+
+} @else {
+
+  <figure class="mb-0">
+
+    <svg class="analytics-chart" [attr.viewBox]="viewBox" role="img"
+         [attr.aria-label]="accessibleSummary()" preserveAspectRatio="none">
+
+      <!-- Horizontal gridlines + y-axis labels -->
+      @for (line of gridLines(); track line.y) {
+        <line class="analytics-chart-grid"
+              [attr.x1]="plot.left" [attr.x2]="plot.left + plot.width"
+              [attr.y1]="line.y" [attr.y2]="line.y"></line>
+        <text class="analytics-chart-axis-label" [attr.x]="plot.left - 8" [attr.y]="line.y + 4"
+              text-anchor="end">{{ line.label }}</text>
+      }
+
+      <path class="analytics-chart-area" [attr.d]="areaPath()"></path>
+
+      <polyline class="analytics-chart-line" [attr.points]="linePath()"></polyline>
+
+      @for (point of plotted(); track point.x) {
+        <circle class="analytics-chart-point" [attr.cx]="point.x" [attr.cy]="point.y" r="3">
+          <title>{{ point.label }}: {{ point.display }}</title>
+        </circle>
+      }
+
+      <!-- X-axis labels (thinned so they never collide) -->
+      @for (point of xLabels(); track point.x) {
+        <text class="analytics-chart-axis-label" [attr.x]="point.x"
+              [attr.y]="plot.top + plot.height + 18" text-anchor="middle">{{ point.label }}</text>
+      }
+
+    </svg>
+
+    <figcaption class="visually-hidden">{{ accessibleSummary() }}</figcaption>
+
+  </figure>
+
+  <!-- The same series as a table: the numbers stay reachable without the chart. -->
+  <details class="mt-2">
+    <summary class="small text-secondary-emphasis">View {{ title().toLowerCase() }} as data</summary>
+    <div class="table-responsive mt-2">
+      <table class="table table-sm table-dark table-borderless mb-0">
+        <caption class="visually-hidden">{{ title() }} by period</caption>
+        <thead>
+          <tr>
+            <th scope="col">Period</th>
+            <th scope="col" class="text-end">{{ isCurrency() ? 'Revenue' : 'Orders' }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (point of plotted(); track point.x) {
+            <tr>
+              <th scope="row" class="fw-normal">{{ point.label }}</th>
+              <td class="text-end tabular-nums">{{ point.display }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </details>
+
+}

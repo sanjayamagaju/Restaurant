@@ -1,0 +1,44 @@
+<section class="card admin-content-card shadow-sm border-0 h-100">
+
+  @if (title()) {
+    <header class="card-header bg-transparent border-0 d-flex align-items-center gap-2 pt-3 pb-0">
+      @if (icon()) {
+        <i class="bi" [class]="icon()" aria-hidden="true"></i>
+      }
+      <h6 class="fw-bold mb-0">{{ title() }}</h6>
+      <div class="ms-auto d-flex align-items-center gap-2">
+        <ng-content select="[widgetActions]"></ng-content>
+      </div>
+    </header>
+  }
+
+  <div class="card-body">
+
+    @if (loading()) {
+      <div class="analytics-skeleton" role="status">
+        <span class="visually-hidden">Loading {{ title() || 'analytics' }}&hellip;</span>
+        @for (row of skeletonRange; track row) {
+          <div class="analytics-skeleton-bar"></div>
+        }
+      </div>
+    } @else if (error()) {
+      <div class="text-center py-4">
+        <p class="mb-2 text-secondary-emphasis">
+          <i class="bi bi-exclamation-triangle-fill text-warning-emphasis me-1" aria-hidden="true"></i>
+          {{ error() }}
+        </p>
+        <button type="button" class="btn btn-sm food-btn rounded-pill px-3" (click)="retry.emit()">
+          <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i> Try Again
+        </button>
+      </div>
+    } @else if (empty()) {
+      <p class="text-center text-secondary-emphasis py-4 mb-0">
+        <i class="bi bi-inbox me-1" aria-hidden="true"></i> {{ emptyMessage() }}
+      </p>
+    } @else {
+      <ng-content></ng-content>
+    }
+
+  </div>
+
+</section>

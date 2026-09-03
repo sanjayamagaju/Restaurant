@@ -103,7 +103,7 @@ describe('RestaurantService', () => {
   it('tracks a newly placed order for customer-side recovery', () => {
     service.currentTable.set('5');
 
-    service.placeOrder([], 10);
+    service.placeOrder([], 'Extra napkins please');
 
     const req = httpMock.expectOne(r => r.url.endsWith('/orders/') && r.method === 'POST');
     req.flush(makeOrder({ id: '42', status: 'NEW' }));

@@ -1,0 +1,101 @@
+<app-analytics-widget
+  title="Customer Feedback"
+  icon="bi-star-fill"
+  [loading]="state().loading"
+  [error]="state().error"
+  [empty]="isEmpty()"
+  emptyMessage="No feedback received for this period."
+  [skeletonRows]="5"
+  (retry)="retry()">
+
+  @if (summary(); as data) {
+
+    <div class="row g-4">
+
+      <div class="col-md-5">
+
+        <h6 class="small fw-bold text-secondary-emphasis mb-2">Average Rating</h6>
+
+        <p class="mb-1" [attr.aria-label]="'Average rating ' + data.averageRating + ' out of 5'">
+          @for (filled of stars(data.averageRating); track $index) {
+            <i class="bi fs-4" [class]="filled ? 'bi-star-fill text-warning' : 'bi-star text-secondary'"
+               aria-hidden="true"></i>
+          }
+        </p>
+
+        <p class="mb-0">
+          <span class="fs-3 fw-bold tabular-nums">{{ data.averageRating | number: '1.1-1' }}</span>
+          <span class="text-secondary-emphasis"> / 5</span>
+        </p>
+
+        <p class="small text-secondary-emphasis">
+          From {{ data.count | number }} {{ data.count === 1 ? 'rating' : 'ratings' }}
+        </p>
+
+        <table class="table table-dark table-borderless table-sm align-middle mb-0">
+          <caption class="visually-hidden">Share of ratings at each star level</caption>
+          <thead class="visually-hidden">
+            <tr>
+              <th scope="col">Rating</th>
+              <th scope="col">Share</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of distribution(); track row.rating) {
+              <tr>
+                <th scope="row" class="fw-normal text-nowrap" style="width: 3.5rem;">
+                  {{ row.rating }} <i class="bi bi-star-fill text-warning small" aria-hidden="true"></i>
+                </th>
+                <td>
+                  <span class="progress" role="presentation" style="height: 0.6rem;">
+                    <span class="progress-bar analytics-bar" [style.width.%]="row.pct"></span>
+                  </span>
+                </td>
+                <td class="text-end tabular-nums small" style="width: 4rem;">
+                  {{ row.pct | number: '1.0-0' }}%
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+      </div>
+
+      <div class="col-md-7">
+
+        <h6 class="small fw-bold text-secondary-emphasis mb-2">Recent Feedback</h6>
+
+        @if (recent().length) {
+
+          <ul class="list-unstyled mb-0">
+            @for (item of recent(); track item.orderId) {
+              <li class="pb-2 mb-2 border-bottom border-secondary-subtle">
+                <p class="mb-1" [attr.aria-label]="item.rating + ' out of 5 stars'">
+                  @for (filled of stars(item.rating); track $index) {
+                    <i class="bi small" [class]="filled ? 'bi-star-fill text-warning' : 'bi-star text-secondary'"
+                       aria-hidden="true"></i>
+                  }
+                </p>
+                @if (item.comment) {
+                  <p class="mb-1 fst-italic">&ldquo;{{ item.comment }}&rdquo;</p>
+                }
+                <small class="text-secondary-emphasis">
+                  Order #{{ item.orderId }} &middot; {{ item.createdAt | date: 'short' }}
+                </small>
+              </li>
+            }
+          </ul>
+
+        } @else {
+
+          <p class="text-secondary-emphasis mb-0">No comments left in this period.</p>
+
+        }
+
+      </div>
+
+    </div>
+
+  }
+
+</app-analytics-widget>

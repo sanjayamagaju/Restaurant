@@ -3,10 +3,12 @@ import {toSignal} from '@angular/core/rxjs-interop';
 import {DatePipe, NgClass} from '@angular/common';
 import {ActivatedRoute} from '@angular/router';
 import {map} from 'rxjs';
-import {CURRENCY, CANCELLABLE_STATUSES, NEXT_STATUS_ACTION, ORDER_STATUS_META, URGENCY_META} from '../../../utils/constants';
+import {
+  CURRENCY, CANCELLABLE_STATUSES, CANCELLATION_REASONS, NEXT_STATUS_ACTION, ORDER_STATUS_META, URGENCY_META,
+} from '../../../utils/constants';
 import {elapsedLabel, isToday, urgency as urgencyOf, Urgency} from '../../../utils/order-timing';
 import {RestaurantService} from '../../../services/restaurant.service';
-import {Order, OrderStatus} from '../../../models/types';
+import {CancellationReason, Order, OrderStatus} from '../../../models/types';
 
 interface StatusColumn {
   key: OrderStatus;
@@ -30,6 +32,10 @@ export class AdminOrders implements OnInit, OnDestroy {
   expandedOrders = new Set<string>();
   pendingActionOrderIds = signal<Set<string>>(new Set());
   actionError = signal<string | null>(null);
+  /** Order awaiting a cancellation reason, if any. */
+  cancellingOrderId = signal<string | null>(null);
+  cancelReason = signal<CancellationReason>('CUSTOMER_REQUEST');
+  readonly cancellationReasons = CANCELLATION_REASONS;
   now = signal(Date.now());
   private tickHandle?: ReturnType<typeof setInterval>;
   private errorTimeout?: ReturnType<typeof setTimeout>;
@@ -131,16 +137,33 @@ export class AdminOrders implements OnInit, OnDestroy {
     return URGENCY_META[urgency];
   }
 
-  performAction(order: Order, status: OrderStatus) {
+  performAction(order: Order, status: OrderStatus, cancellationReason?: CancellationReason) {
     if (this.isUpdating(order.id)) return;
     this.pendingActionOrderIds.update(set => new Set(set).add(order.id));
-    this.restaurantService.updateOrderStatus(order.id, status).subscribe({
-      next: () => this.finishAction(order.id),
+    this.restaurantService.updateOrderStatus(order.id, status, cancellationReason).subscribe({
+      next: () => {
+        this.finishAction(order.id);
+        this.cancellingOrderId.set(null);
+      },
       error: (err) => {
         this.finishAction(order.id);
         this.showError(err);
       },
     });
+  }
+
+  /** Cancelling asks for a reason first, so cancellation analytics has real data. */
+  startCancel(order: Order) {
+    this.cancelReason.set('CUSTOMER_REQUEST');
+    this.cancellingOrderId.set(order.id);
+  }
+
+  dismissCancel() {
+    this.cancellingOrderId.set(null);
+  }
+
+  confirmCancel(order: Order) {
+    this.performAction(order, 'CANCELLED', this.cancelReason());
   }
 
   private finishAction(orderId: string) {

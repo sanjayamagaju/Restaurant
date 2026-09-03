@@ -1,0 +1,100 @@
+<div class="row g-4">
+
+  <div class="col-lg-6">
+    <app-analytics-widget
+      title="Order Status"
+      icon="bi-diagram-3-fill"
+      [loading]="state().loading"
+      [error]="state().error"
+      [empty]="isEmpty()"
+      emptyMessage="No orders found for this period."
+      [skeletonRows]="5"
+      (retry)="retry()">
+
+      <table class="table table-dark table-borderless table-sm align-middle mb-0">
+        <caption class="visually-hidden">Order counts by lifecycle status</caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Status</th>
+            <th scope="col">Orders</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track row.status) {
+            <tr>
+              <th scope="row" class="fw-normal text-nowrap" style="width: 8rem;">
+                <i class="bi me-1" [class]="row.meta.icon" aria-hidden="true"></i>
+                {{ row.label }}
+              </th>
+              <td>
+                <span class="progress" role="presentation" style="height: 0.75rem;">
+                  <span class="progress-bar analytics-bar" [style.width.%]="row.pct"></span>
+                </span>
+              </td>
+              <td class="text-end tabular-nums" style="width: 5rem;">{{ row.count | number }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+    </app-analytics-widget>
+  </div>
+
+  <div class="col-lg-6">
+    <app-analytics-widget
+      title="Cancellations"
+      icon="bi-x-octagon-fill"
+      [loading]="state().loading"
+      [error]="state().error"
+      [empty]="isEmpty()"
+      emptyMessage="No orders found for this period."
+      [skeletonRows]="4"
+      (retry)="retry()">
+
+      @if (cancellation(); as summary) {
+
+        <p class="mb-1">
+          <span class="display-6 fw-bold tabular-nums">{{ summary.rate | number: '1.0-1' }}%</span>
+          <span class="text-secondary-emphasis ms-2">cancellation rate</span>
+        </p>
+
+        <p class="text-secondary-emphasis small">
+          {{ summary.cancelledOrders | number }} cancelled / {{ summary.totalOrders | number }} orders
+        </p>
+
+        @if (summary.reasons.length) {
+
+          <h6 class="small fw-bold text-secondary-emphasis mt-3 mb-2">Cancellation Reasons</h6>
+
+          <table class="table table-dark table-borderless table-sm mb-0">
+            <caption class="visually-hidden">Cancelled orders grouped by recorded reason</caption>
+            <thead class="visually-hidden">
+              <tr>
+                <th scope="col">Reason</th>
+                <th scope="col">Orders</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (reason of summary.reasons; track reason.reason) {
+                <tr>
+                  <th scope="row" class="fw-normal">{{ reason.label }}</th>
+                  <td class="text-end tabular-nums">{{ reason.count | number }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+        } @else if (summary.cancelledOrders > 0) {
+
+          <p class="small text-secondary-emphasis mb-0">
+            No reasons were recorded for these cancellations.
+          </p>
+
+        }
+
+      }
+
+    </app-analytics-widget>
+  </div>
+
+</div>

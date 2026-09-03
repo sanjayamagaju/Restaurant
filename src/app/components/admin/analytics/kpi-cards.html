@@ -1,0 +1,58 @@
+@if (state().error) {
+
+  <div class="alert alert-warning d-flex align-items-center justify-content-between" role="alert">
+    <span>
+      <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+      Unable to load analytics.
+    </span>
+    <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3" (click)="retry()">
+      <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i> Try Again
+    </button>
+  </div>
+
+} @else {
+
+  <div class="row g-3 g-lg-4">
+    @for (card of cards(); track card.key) {
+      <div class="col-xl-2 col-lg-4 col-sm-6">
+        <div class="card admin-stat-card shadow-sm border-0 h-100">
+          <div class="card-body">
+
+            @if (state().loading) {
+
+              <div role="status" class="d-flex flex-column gap-2">
+                <span class="visually-hidden">Loading {{ card.label }}&hellip;</span>
+                <div class="analytics-kpi-skeleton analytics-kpi-skeleton-lg"></div>
+                <div class="analytics-kpi-skeleton"></div>
+              </div>
+
+            } @else {
+
+              <div class="d-flex align-items-start gap-2 mb-2">
+                <span class="admin-stat-icon" [style.background]="card.gradient" aria-hidden="true">
+                  <i class="bi" [class]="card.icon"></i>
+                </span>
+                <div class="min-w-0">
+                  <h2 class="fw-bold mb-0 tabular-nums analytics-kpi-value">
+                    @if (card.currency) {{{ CURRENCY }} }{{ card.value | number: '1.0-0' }}
+                  </h2>
+                  <h6 class="text-secondary-emphasis mb-0 small">{{ card.label }}</h6>
+                </div>
+              </div>
+
+              <p class="small mb-0" [class]="deltaClass(card)">
+                <span class="fw-semibold">{{ card.deltaLabel }}</span>
+                @if (comparisonLabel()) {
+                  <span class="text-secondary-emphasis d-block">{{ comparisonLabel() }}</span>
+                }
+              </p>
+
+            }
+
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+}

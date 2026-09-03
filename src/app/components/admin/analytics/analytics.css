@@ -1,0 +1,14 @@
+.analytics-range-select {
+  min-width: 11rem;
+}
+
+.analytics-custom-range {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--bs-border-color);
+}
+
+/* Keep focus rings visible on the dashboard's dark surfaces. */
+.analytics-page :focus-visible {
+  outline: 2px solid #ffb400;
+  outline-offset: 2px;
+}

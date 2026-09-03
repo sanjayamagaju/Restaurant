@@ -52,6 +52,10 @@ export const routes: Routes = [
         component: AdminTables,
         canActivate: [],
       },
+      {
+        path: 'analytics',
+        loadComponent: () => import('./components/admin/analytics/analytics').then(m => m.Analytics),
+      },
     ]
   },
   {

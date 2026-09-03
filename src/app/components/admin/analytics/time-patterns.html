@@ -1,0 +1,103 @@
+<div class="row g-4">
+
+  <div class="col-lg-6">
+    <app-analytics-widget
+      title="Peak Hours"
+      icon="bi-clock-fill"
+      [loading]="state().loading"
+      [error]="state().error"
+      [empty]="isEmpty()"
+      emptyMessage="No orders found for this period."
+      [skeletonRows]="6"
+      (retry)="retry()">
+
+      @if (busiestHour()) {
+        <p class="small text-secondary-emphasis mb-3">
+          Busiest hour: <strong>{{ busiestHour()!.label }}</strong>
+          ({{ busiestHour()!.orders | number }} orders). Grouped in the restaurant's local time.
+        </p>
+      }
+
+      <table class="table table-dark table-borderless table-sm align-middle mb-0">
+        <caption class="visually-hidden">Orders and revenue by hour of day</caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Hour</th>
+            <th scope="col">Orders</th>
+            <th scope="col">Revenue</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (bar of hourBars(); track bar.label) {
+            <tr>
+              <th scope="row" class="fw-normal text-nowrap" style="width: 4.5rem;">{{ bar.label }}</th>
+              <td>
+                <span class="progress" role="presentation" style="height: 0.75rem;">
+                  <span class="progress-bar analytics-bar" [style.width.%]="bar.pct"></span>
+                </span>
+              </td>
+              <td class="text-end tabular-nums text-nowrap" style="width: 5rem;">
+                {{ bar.orders | number }}
+              </td>
+              <td class="text-end tabular-nums text-secondary-emphasis small text-nowrap">
+                {{ CURRENCY }} {{ bar.revenue | number: '1.0-0' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+    </app-analytics-widget>
+  </div>
+
+  <div class="col-lg-6">
+    <app-analytics-widget
+      title="Day of Week"
+      icon="bi-calendar-week-fill"
+      [loading]="state().loading"
+      [error]="state().error"
+      [empty]="isEmpty()"
+      emptyMessage="No orders found for this period."
+      [skeletonRows]="6"
+      (retry)="retry()">
+
+      @if (busiestDay()) {
+        <p class="small text-secondary-emphasis mb-3">
+          Busiest day: <strong>{{ busiestDay()!.label }}</strong>
+          ({{ busiestDay()!.orders | number }} orders).
+        </p>
+      }
+
+      <table class="table table-dark table-borderless table-sm align-middle mb-0">
+        <caption class="visually-hidden">Orders and revenue by day of the week</caption>
+        <thead class="visually-hidden">
+          <tr>
+            <th scope="col">Day</th>
+            <th scope="col">Orders</th>
+            <th scope="col">Revenue</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (bar of weekdayBars(); track bar.label) {
+            <tr>
+              <th scope="row" class="fw-normal text-nowrap" style="width: 6.5rem;">{{ bar.label }}</th>
+              <td>
+                <span class="progress" role="presentation" style="height: 0.75rem;">
+                  <span class="progress-bar analytics-bar" [style.width.%]="bar.pct"></span>
+                </span>
+              </td>
+              <td class="text-end tabular-nums text-nowrap" style="width: 5rem;">
+                {{ bar.orders | number }}
+              </td>
+              <td class="text-end tabular-nums text-secondary-emphasis small text-nowrap">
+                {{ CURRENCY }} {{ bar.revenue | number: '1.0-0' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+    </app-analytics-widget>
+  </div>
+
+</div>

@@ -4,7 +4,21 @@ import { provideRouter } from '@angular/router';
 
 import { Kitchen } from './kitchen';
 import { RestaurantService } from '../../services/restaurant.service';
-import { Order } from '../../models/types';
+import { MenuItem, Order } from '../../models/types';
+
+function makeMenuItem(overrides: Partial<MenuItem> = {}): MenuItem {
+  return {
+    id: 'm1',
+    name: 'Burger',
+    price: 9.99,
+    description: '',
+    isSpecial: false,
+    available: true,
+    displayOrder: 0,
+    optionGroups: [],
+    ...overrides,
+  };
+}
 
 function makeOrder(overrides: Partial<Order> = {}): Order {
   return {
@@ -13,7 +27,7 @@ function makeOrder(overrides: Partial<Order> = {}): Order {
     items: [
       {
         id: 'i1',
-        menuItem: { id: 'm1', name: 'Burger', price: 9.99, description: '', isSpecial: false },
+        menuItem: makeMenuItem(),
         quantity: 1,
         completed: false,
       },
@@ -125,8 +139,8 @@ describe('Kitchen', () => {
       id: '1',
       status: 'PREPARING',
       items: [
-        { id: 'i1', menuItem: { id: 'm1', name: 'Burger', price: 9.99, description: '', isSpecial: false }, quantity: 1, completed: false },
-        { id: 'i2', menuItem: { id: 'm2', name: 'Fries', price: 3, description: '', isSpecial: false }, quantity: 1, completed: true },
+        { id: 'i1', menuItem: makeMenuItem(), quantity: 1, completed: false },
+        { id: 'i2', menuItem: makeMenuItem({ id: 'm2', name: 'Fries', price: 3 }), quantity: 1, completed: true },
       ],
     });
     expect(component.allItemsComplete(order)).toBeFalse();

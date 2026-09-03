@@ -1,0 +1,44 @@
+<app-analytics-widget
+  title="Table Performance"
+  icon="bi-grid-3x3-gap-fill"
+  [loading]="state().loading"
+  [error]="state().error"
+  [empty]="isEmpty()"
+  emptyMessage="No completed orders per table for this period."
+  [skeletonRows]="5"
+  (retry)="retry()">
+
+  <button widgetActions type="button" class="btn btn-sm food-btn rounded-pill px-3"
+          [disabled]="exporting()" (click)="exportCsv()">
+    <i class="bi bi-download me-1" aria-hidden="true"></i>
+    {{ exporting() ? 'Exporting…' : 'Export CSV' }}
+  </button>
+
+  <div class="table-responsive">
+    <table class="table table-dark table-borderless align-middle mb-0">
+      <caption class="visually-hidden">Orders, revenue and average order value per table</caption>
+      <thead>
+        <tr>
+          <th scope="col">Table</th>
+          <th scope="col" class="text-end">Orders</th>
+          <th scope="col" class="text-end">Revenue</th>
+          <th scope="col" class="text-end">Avg Order Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.tableNumber) {
+          <tr>
+            <th scope="row" class="fw-normal">
+              <i class="bi bi-qr-code me-1 text-secondary-emphasis" aria-hidden="true"></i>
+              Table {{ row.tableNumber }}
+            </th>
+            <td class="text-end tabular-nums">{{ row.orders | number }}</td>
+            <td class="text-end tabular-nums">{{ CURRENCY }} {{ row.revenue | number: '1.0-2' }}</td>
+            <td class="text-end tabular-nums">{{ CURRENCY }} {{ row.averageOrderValue | number: '1.0-2' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+</app-analytics-widget>

@@ -57,6 +57,12 @@ export class Admin implements OnInit, OnDestroy {
       route: 'tables',
     },
     {
+      key: 'analytics',
+      name: 'Analytics',
+      icon: 'bi-graph-up',
+      route: 'analytics',
+    },
+    {
       key: 'kitchen',
       name: 'Kitchen Display',
       icon: 'bi-fire',

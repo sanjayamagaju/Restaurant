@@ -103,7 +103,7 @@
                   }
                   @if (canCancel(order.status)) {
                     <button
-                      (click)="performAction(order, 'CANCELLED')"
+                      (click)="startCancel(order)"
                       [disabled]="isUpdating(order.id)"
                       class="btn btn-outline-danger btn-sm rounded-pill px-3"
                     >
@@ -112,6 +112,42 @@
                     </button>
                   }
                 </div>
+
+                @if (cancellingOrderId() === order.id) {
+                  <div class="mt-3 p-3 rounded-3 border border-danger-subtle bg-body-tertiary">
+
+                    <fieldset class="mb-2">
+                      <legend class="small fw-semibold mb-2">Why is this order being cancelled?</legend>
+                      @for (reason of cancellationReasons; track reason.value) {
+                        <div class="form-check">
+                          <input class="form-check-input" type="radio"
+                                 [id]="'cancel-reason-' + order.id + '-' + reason.value"
+                                 [name]="'cancel-reason-' + order.id"
+                                 [value]="reason.value"
+                                 [checked]="cancelReason() === reason.value"
+                                 (change)="cancelReason.set(reason.value)">
+                          <label class="form-check-label small"
+                                 [for]="'cancel-reason-' + order.id + '-' + reason.value">
+                            {{ reason.label }}
+                          </label>
+                        </div>
+                      }
+                    </fieldset>
+
+                    <div class="d-flex gap-2">
+                      <button type="button" class="btn btn-danger btn-sm rounded-pill px-3"
+                              [disabled]="isUpdating(order.id)" (click)="confirmCancel(order)">
+                        <i class="bi bi-x-circle me-1"></i>
+                        Confirm Cancellation
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-3"
+                              (click)="dismissCancel()">
+                        Keep Order
+                      </button>
+                    </div>
+
+                  </div>
+                }
               </div>
             </div>
           } @empty {

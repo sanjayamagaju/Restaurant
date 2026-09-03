@@ -1,0 +1,53 @@
+<app-analytics-widget
+  title="Category Performance"
+  icon="bi-collection-fill"
+  [loading]="state().loading"
+  [error]="state().error"
+  [empty]="isEmpty()"
+  emptyMessage="No category sales for this period."
+  [skeletonRows]="5"
+  (retry)="retry()">
+
+  <button widgetActions type="button" class="btn btn-sm food-btn rounded-pill px-3"
+          [disabled]="exporting()" (click)="exportCsv()">
+    <i class="bi bi-download me-1" aria-hidden="true"></i>
+    {{ exporting() ? 'Exporting…' : 'Export CSV' }}
+  </button>
+
+  <div class="table-responsive">
+    <table class="table table-dark table-borderless align-middle mb-0">
+      <caption class="visually-hidden">Revenue and units sold per menu category</caption>
+      <thead>
+        <tr>
+          <th scope="col">Category</th>
+          <th scope="col" class="text-end">Items Sold</th>
+          <th scope="col" class="text-end">Orders</th>
+          <th scope="col" class="text-end">Revenue</th>
+          <th scope="col" class="text-end">% of Revenue</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.category) {
+          <tr>
+            <th scope="row" class="fw-normal">
+              {{ row.category }}
+              <span class="progress mt-1" role="presentation" style="height: 0.35rem;">
+                <span class="progress-bar analytics-bar" [style.width.%]="row.pctOfRevenue"></span>
+              </span>
+            </th>
+            <td class="text-end tabular-nums">{{ row.unitsSold | number }}</td>
+            <td class="text-end tabular-nums">{{ row.orders | number }}</td>
+            <td class="text-end tabular-nums">{{ CURRENCY }} {{ row.revenue | number: '1.0-2' }}</td>
+            <td class="text-end tabular-nums">{{ row.pctOfRevenue | number: '1.0-1' }}%</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <p class="small text-secondary-emphasis mb-0 mt-2">
+    Grouped by the category each item belonged to when it was ordered, so past
+    reports stay accurate if items are recategorised.
+  </p>
+
+</app-analytics-widget>

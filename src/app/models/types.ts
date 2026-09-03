@@ -99,6 +99,8 @@ export const ORDER_STATUS_SEQUENCE: OrderStatus[] = [
   'COMPLETED',
 ];
 
+export type CancellationReason = 'CUSTOMER_REQUEST' | 'ITEM_UNAVAILABLE' | 'OTHER';
+
 export interface Order {
   id: string;
   tableNumber: string;
@@ -106,6 +108,7 @@ export interface Order {
   totalAmount: number;
   specialInstructions?: string;
   status: OrderStatus;
+  cancellationReason?: CancellationReason | '';
   createdAt: string;
   acceptedAt?: string | null;
   preparingAt?: string | null;

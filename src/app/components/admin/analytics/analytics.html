@@ -1,0 +1,136 @@
+<div class="analytics-page">
+
+  <!-- Header: range filter + refresh -->
+  <header class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+
+    <div>
+      <h5 class="fw-bold font-display mb-1">Analytics</h5>
+      <p class="text-secondary-emphasis small mb-0">
+        {{ dateRange().from }} &rarr; {{ dateRange().to }}
+      </p>
+    </div>
+
+    <div class="d-flex flex-wrap align-items-end gap-3">
+
+      <div>
+        <label class="form-label small text-secondary-emphasis mb-1" for="analytics-range">
+          Date range
+        </label>
+        <select id="analytics-range" class="form-select form-select-sm analytics-range-select"
+                [value]="dateRange().preset"
+                (change)="selectPreset($any($event.target).value)">
+          @for (preset of presets; track preset.key) {
+            <option [value]="preset.key">{{ preset.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="text-end">
+        <p class="small text-secondary-emphasis mb-1" aria-live="polite">
+          @if (lastUpdated()) {
+            Last updated: {{ lastUpdated() | date: 'shortTime' }}
+          } @else {
+            Loading&hellip;
+          }
+        </p>
+        <button type="button" class="btn btn-sm food-btn rounded-pill px-3"
+                [disabled]="refreshing()" (click)="refresh()">
+          <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>
+          {{ refreshing() ? 'Refreshing…' : 'Refresh' }}
+        </button>
+      </div>
+
+    </div>
+
+  </header>
+
+  <!-- Custom range inputs -->
+  @if (isCustom()) {
+    <form class="row g-2 align-items-end mb-4 analytics-custom-range p-3 rounded-3"
+          (ngSubmit)="applyCustomRange()">
+
+      <div class="col-sm-auto">
+        <label class="form-label small text-secondary-emphasis mb-1" for="analytics-from">From</label>
+        <input id="analytics-from" type="date" class="form-control form-control-sm"
+               [max]="today" [value]="customFrom()"
+               (change)="customFrom.set($any($event.target).value)">
+      </div>
+
+      <div class="col-sm-auto">
+        <label class="form-label small text-secondary-emphasis mb-1" for="analytics-to">To</label>
+        <input id="analytics-to" type="date" class="form-control form-control-sm"
+               [max]="today" [value]="customTo()"
+               (change)="customTo.set($any($event.target).value)">
+      </div>
+
+      <div class="col-sm-auto">
+        <button type="submit" class="btn btn-sm food-btn rounded-pill px-4">Apply</button>
+      </div>
+
+      @if (customError()) {
+        <div class="col-12">
+          <p class="small text-danger-emphasis mb-0" role="alert">{{ customError() }}</p>
+        </div>
+      }
+
+    </form>
+  }
+
+  <!-- KPI cards -->
+  <section class="mb-4" aria-label="Key performance indicators">
+    <app-analytics-kpi-cards />
+  </section>
+
+  <!-- Trends -->
+  <section class="row g-4 mb-4" aria-label="Trends over time">
+
+    <div class="col-xl-6">
+      <app-analytics-widget title="Revenue Trend" icon="bi-cash-stack">
+        <app-trend-chart metric="revenue" />
+      </app-analytics-widget>
+    </div>
+
+    <div class="col-xl-6">
+      <app-analytics-widget title="Order Volume Trend" icon="bi-bar-chart-line-fill">
+        <app-trend-chart metric="orders" />
+      </app-analytics-widget>
+    </div>
+
+  </section>
+
+  <!-- Menu performance: top sellers, top performers, low sales, full table -->
+  <section class="mb-4" aria-label="Menu performance">
+    <app-menu-performance />
+  </section>
+
+  <!-- Category performance -->
+  <section class="row g-4 mb-4" aria-label="Category performance">
+    <div class="col-12">
+      <app-category-performance />
+    </div>
+  </section>
+
+  <!-- Demand patterns -->
+  <section class="mb-4" aria-label="Demand by time">
+    <app-time-patterns />
+  </section>
+
+  <!-- Order status + cancellations -->
+  <section class="mb-4" aria-label="Order status and cancellations">
+    <app-status-breakdown />
+  </section>
+
+  <!-- Feedback + tables -->
+  <section class="row g-4" aria-label="Customer feedback and table performance">
+
+    <div class="col-xl-7">
+      <app-feedback-summary />
+    </div>
+
+    <div class="col-xl-5">
+      <app-table-performance />
+    </div>
+
+  </section>
+
+</div>

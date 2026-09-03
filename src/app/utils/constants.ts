@@ -1,4 +1,4 @@
-import { OrderStatus } from '../models/types';
+import { CancellationReason, OrderStatus } from '../models/types';
 import { Urgency } from './order-timing';
 
 export const CURRENCY = 'Rs.';
@@ -30,6 +30,14 @@ export const NEXT_STATUS_ACTION: Partial<Record<OrderStatus, { next: OrderStatus
 
 // Statuses from which staff may still cancel an order.
 export const CANCELLABLE_STATUSES: OrderStatus[] = ['NEW', 'ACCEPTED', 'PREPARING'];
+
+// Reasons staff can attach when cancelling. Must match the backend's
+// Order.CANCELLATION_REASON_CHOICES.
+export const CANCELLATION_REASONS: { value: CancellationReason; label: string }[] = [
+  { value: 'CUSTOMER_REQUEST', label: 'Customer request' },
+  { value: 'ITEM_UNAVAILABLE', label: 'Unavailable item' },
+  { value: 'OTHER', label: 'Other' },
+];
 
 export interface UrgencyMeta {
   icon: string;
